@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     // Simulate API call
