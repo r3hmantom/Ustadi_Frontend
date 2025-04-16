@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { 
   Card, 
   CardHeader, 
@@ -54,7 +55,9 @@ export function Leaderboard({ users, currentUserName }: LeaderboardProps) {
         </ul>
       </CardContent>
       <CardFooter className="border-t border-black">
-        <Button variant="ghost" className="w-full font-bold">Full Leaderboard</Button>
+        <Link href="/dashboard/leaderboard" className="w-full">
+          <Button variant="ghost" className="w-full font-bold">Full Leaderboard</Button>
+        </Link>
       </CardFooter>
     </Card>
   );
