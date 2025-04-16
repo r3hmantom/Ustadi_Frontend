@@ -15,6 +15,12 @@ Ustadi Frontend is a Next.js application using React 19, TypeScript, and Tailwin
   - Marquee: For continuous scrolling text elements
   - ParallaxScroll: For parallax scrolling effects
 - **Dependency**: Added framer-motion for advanced animations
+- **New Layout**: Implemented dashboard layout with:
+  - Animated collapsible sidebar using Framer Motion
+  - Neubrutalism design elements (border, shadows, colors)
+  - Responsive navigation with mobile-friendly toggle
+  - Dynamic menu highlighting for active sections
+  - User profile and notification indicators
 
 ## Project Structure
 
