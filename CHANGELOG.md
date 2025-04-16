@@ -4,6 +4,11 @@
 Ustadi Frontend is a Next.js application using React 19, TypeScript, and Tailwind CSS. The application follows the App Router pattern of Next.js and includes authentication features, UI components, and various API endpoints.
 
 ## Recent Changes - April 16, 2025
+- **Refactoring**: Refactored dashboard page to improve maintainability:
+  - Split large dashboard page (>500 lines) into modular components
+  - Implemented a proper type system for dashboard data
+  - Created dedicated component files for each dashboard section
+  - Reduced main file size to under 100 lines while maintaining functionality
 - **Feature**: Added a new landing page with neubrutalism design
 - **Enhancement**: Modified shadcn components to support neubrutalism design variants:
   - Added neubrutalism, neuPrimary, and neuSecondary variants to Button component
@@ -51,7 +56,18 @@ Ustadi Frontend is a Next.js application using React 19, TypeScript, and Tailwin
 - Authentication-related pages and components
 
 #### `/app/dashboard` - Dashboard Pages
-- Dashboard UI and features
+- `/app/dashboard/page.tsx` - Main dashboard page using modular components
+- `/app/dashboard/types.ts` - Shared TypeScript types for dashboard components
+- `/app/dashboard/components/` - Modular dashboard components:
+  - `DashboardHeader.tsx` - Page header with user greeting
+  - `DashboardStats.tsx` - Statistics cards section
+  - `TaskManagement.tsx` - Task management with tabs for upcoming/completed tasks
+  - `PomodoroTimer.tsx` - Interactive pomodoro timer with work/break modes
+  - `Leaderboard.tsx` - User ranking leaderboard
+  - `StudySessions.tsx` - Recent study sessions history
+  - `FlashcardSection.tsx` - Interactive flashcards preview
+  - `QuickActions.tsx` - Quick access buttons for common actions
+  - `WeeklyProgress.tsx` - Weekly progress visualization
 
 ### `/components` - Reusable UI Components
 - `/components/ui/button.tsx` - Button component with neubrutalism variants
