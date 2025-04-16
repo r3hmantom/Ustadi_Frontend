@@ -31,7 +31,6 @@ export default function DashboardPageLayout({
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
     { id: "tasks", label: "Tasks", icon: <CheckSquare size={20} /> },
-    { id: "time", label: "Time Tracker", icon: <Timer size={20} /> },
     { id: "revisions", label: "Revisions", icon: <BrainCircuit size={20} /> },
     { id: "quizzes", label: "Quizzes", icon: <BookOpen size={20} /> },
     { id: "groups", label: "Group Study", icon: <Users size={20} /> },
