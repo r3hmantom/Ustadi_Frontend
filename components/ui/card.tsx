@@ -6,7 +6,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "neubrutalism"
 }
 
-function Card({ className, variant = "default", ...props }: CardProps) {
+function Card({ className, variant = "neubrutalism", ...props }: CardProps) {
   return (
     <div
       data-slot="card"

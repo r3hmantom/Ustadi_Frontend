@@ -161,33 +161,32 @@ export function Marquee({
   direction?: "left" | "right";
   speed?: number;
 }) {
+  // Calculate animation distance and direction
+  const marqueeRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = React.useState(0);
+
+  useEffect(() => {
+    if (marqueeRef.current) {
+      setWidth(marqueeRef.current.scrollWidth);
+    }
+  }, [children]);
+
+  const animateProps = direction === "left"
+    ? { x: [0, -width] }
+    : { x: [-width, 0] };
+
   return (
-    <div className={`overflow-hidden whitespace-nowrap ${className}`}>
+    <div className={`overflow-hidden whitespace-nowrap ${className}`} style={{ position: "relative" }}>
       <motion.div
-        initial={{ x: direction === "left" ? 0 : "-100%" }}
-        animate={{ x: direction === "left" ? "-100%" : 0 }}
+        ref={marqueeRef}
+        style={{ display: "inline-block", whiteSpace: "nowrap" }}
+        animate={animateProps}
         transition={{
-          repeat: Infinity,
-          repeatType: "loop",
-          duration: 100 / speed,
-          ease: "linear",
+          x: { repeat: Infinity, repeatType: "loop", duration: width ? width / speed : 1, ease: "linear" },
         }}
-        className="inline-block"
       >
-        {children}
-      </motion.div>
-      <motion.div
-        initial={{ x: direction === "left" ? "100%" : 0 }}
-        animate={{ x: direction === "left" ? 0 : "100%" }}
-        transition={{
-          repeat: Infinity,
-          repeatType: "loop",
-          duration: 100 / speed,
-          ease: "linear",
-        }}
-        className="inline-block"
-      >
-        {children}
+        <span style={{ display: "inline-block" }}>{children}</span>
+        <span style={{ display: "inline-block" }}>{children}</span>
       </motion.div>
     </div>
   );

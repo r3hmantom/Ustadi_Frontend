@@ -116,7 +116,7 @@ export default function Home() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
           {/* Feature 1 */}
           <FadeIn delay={0.1}>
-            <Card variant="neubrutalism" className="bg-[#FFD600] p-2">
+            <Card className="bg-[#FFD600] p-2">
               <CardHeader>
                 <CardTitle className="text-2xl">Interactive Learning</CardTitle>
               </CardHeader>
@@ -126,7 +126,7 @@ export default function Home() {
                 </p>
               </CardContent>
               <CardFooter>
-                <Button variant="neubrutalism" className="mt-4">
+                <Button className="mt-4">
                   Explore
                 </Button>
               </CardFooter>
@@ -135,7 +135,7 @@ export default function Home() {
 
           {/* Feature 2 */}
           <FadeIn delay={0.2}>
-            <Card variant="neubrutalism" className="bg-blue-200 p-2">
+            <Card className="bg-blue-200 p-2">
               <CardHeader>
                 <CardTitle className="text-2xl">Expert Guidance</CardTitle>
               </CardHeader>
@@ -145,7 +145,7 @@ export default function Home() {
                 </p>
               </CardContent>
               <CardFooter>
-                <Button variant="neubrutalism" className="mt-4">
+                <Button className="mt-4">
                   Meet Experts
                 </Button>
               </CardFooter>
@@ -154,7 +154,7 @@ export default function Home() {
 
           {/* Feature 3 */}
           <FadeIn delay={0.3}>
-            <Card variant="neubrutalism" className="bg-pink-200 p-2">
+            <Card className="bg-pink-200 p-2">
               <CardHeader>
                 <CardTitle className="text-2xl">Track Progress</CardTitle>
               </CardHeader>
@@ -164,7 +164,7 @@ export default function Home() {
                 </p>
               </CardContent>
               <CardFooter>
-                <Button variant="neubrutalism" className="mt-4">
+                <Button className="mt-4">
                   View Dashboard
                 </Button>
               </CardFooter>
@@ -182,7 +182,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 gap-8">
             <FadeIn direction="left">
-              <Card variant="neubrutalism" className="bg-white p-2 transform rotate-[-1deg]">
+              <Card className="bg-white p-2 transform rotate-[-1deg]">
                 <CardContent>
                   <p className="text-lg italic mb-4">
                     "Ustadi has transformed how I approach learning new skills. The interactive elements and immediate feedback are game-changers!"
@@ -201,7 +201,7 @@ export default function Home() {
             </FadeIn>
 
             <FadeIn direction="right" delay={0.2}>
-              <Card variant="neubrutalism" className="bg-white p-2 transform rotate-[1deg]">
+              <Card className="bg-white p-2 transform rotate-[1deg]">
                 <CardContent>
                   <p className="text-lg italic mb-4">
                     "The structured learning paths combined with flexible pacing made it possible for me to gain new skills while managing my busy schedule."
@@ -226,7 +226,7 @@ export default function Home() {
       <section className="py-24">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <FadeIn>
-            <Card variant="neubrutalism" className="bg-blue-500 p-8">
+            <Card className="bg-blue-500 p-8">
               <CardContent className="flex flex-col items-center">
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
                   Ready to Start Your Learning Journey?
@@ -234,7 +234,7 @@ export default function Home() {
                 <p className="text-lg text-blue-100 mb-8">
                   Join thousands of learners who are achieving their goals with Ustadi.
                 </p>
-                <Button variant="neubrutalism" size="neuLg">
+                <Button size="neuLg">
                   Sign Up Now
                 </Button>
               </CardContent>
