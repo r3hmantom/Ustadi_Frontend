@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StaggerContainer } from "@/components/ui/animated-elements";
 import { CheckCircle2, Clock, Trophy, Sparkles } from "lucide-react";
 
@@ -19,6 +19,10 @@ import { WeeklyProgress } from "./components/WeeklyProgress";
 import { StatItem, Task, StudySession, Flashcard, LeaderboardUser } from "./types";
 
 export default function Dashboard() {
+  // State for flashcards from API
+  const [dashboardFlashcards, setDashboardFlashcards] = useState<Flashcard[]>([]);
+  const [flashcardsLoading, setFlashcardsLoading] = useState(true);
+
   // Mock data for the dashboard
   const stats: StatItem[] = [
     { name: "Completed Tasks", value: 24, icon: <CheckCircle2 className="text-green-500" /> },
@@ -45,18 +49,46 @@ export default function Dashboard() {
     { subject: "Physics", duration: "55 mins", date: "Yesterday, 11:00 AM" },
   ];
 
-  const recentFlashcards: Flashcard[] = [
-    { id: 1, subject: "Biology", front: "What is photosynthesis?", back: "The process by which green plants use sunlight to synthesize foods from carbon dioxide and water" },
-    { id: 2, subject: "History", front: "When did World War II end?", back: "1945" },
-    { id: 3, subject: "Chemistry", front: "What is the chemical formula for water?", back: "H₂O" },
-  ];
-
   const leaderboardData: LeaderboardUser[] = [
     { rank: 1, name: "Sarah K.", points: 4250, avatar: "SK" },
     { rank: 2, name: "Michael T.", points: 3890, avatar: "MT" },
     { rank: 3, name: "Abdul Rehman", points: 3250, avatar: "AR" },
     { rank: 4, name: "Lisa W.", points: 3100, avatar: "LW" },
   ];
+
+  // Fetch flashcards for the dashboard
+  useEffect(() => {
+    const fetchFlashcards = async () => {
+      setFlashcardsLoading(true);
+      try {
+        // Fetch only a few flashcards for the dashboard preview
+        const response = await fetch('/api/revisions?student_id=1&limit=3');
+        if (!response.ok) {
+          throw new Error('Failed to fetch flashcards');
+        }
+        
+        const data = await response.json();
+        
+        // Transform API flashcards to match dashboard Flashcard type
+        const transformedFlashcards: Flashcard[] = data.map((card: any) => ({
+          id: card.flashcard_id,
+          subject: card.tags?.[0] || "General",
+          front: card.front_content,
+          back: card.back_content
+        }));
+        
+        setDashboardFlashcards(transformedFlashcards);
+      } catch (error) {
+        console.error('Error fetching flashcards for dashboard:', error);
+        // Set empty array on error
+        setDashboardFlashcards([]);
+      } finally {
+        setFlashcardsLoading(false);
+      }
+    };
+
+    fetchFlashcards();
+  }, []);
 
   return (
     <StaggerContainer>
@@ -85,15 +117,15 @@ export default function Dashboard() {
         {/* Recent Study Sessions */}
         <StudySessions sessions={studySessions} />
 
-        {/* Revision Cards */}
-        <FlashcardSection flashcards={recentFlashcards} />
+        {/* Revision Cards - Now fetched from API */}
+        <FlashcardSection flashcards={dashboardFlashcards} />
 
         {/* Quick Actions */}
         <QuickActions />
       </div>
       
-      {/* Weekly Progress Chart Placeholder */}
-      <WeeklyProgress isLoading={true} />
+      {/* Weekly Progress Chart */}
+      <WeeklyProgress isLoading={false} />
     </StaggerContainer>
   );
 }
