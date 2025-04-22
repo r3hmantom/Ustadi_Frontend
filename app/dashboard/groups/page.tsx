@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { StaggerContainer } from '@/components/ui/animated-elements';
-import { GroupList } from '@/components/group-study/GroupList';
-import { GroupForm } from '@/components/group-study/GroupForm';
+import { GroupList } from './components/GroupList';
+import { GroupForm } from './components/GroupForm';
 import { Group, CreateGroupForm } from './types';
 import { Users, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';

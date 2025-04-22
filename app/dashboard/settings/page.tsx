@@ -9,10 +9,10 @@ import {
   AppearanceSettings as AppearanceSettingsType,
   PrivacySettings as PrivacySettingsType
 } from './types';
-import { ProfileSettings } from '@/components/settings/ProfileSettings';
-import { NotificationSettings } from '@/components/settings/NotificationSettings';
-import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
-import { PrivacySettings } from '@/components/settings/PrivacySettings';
+import { ProfileSettings } from './components/ProfileSettings';
+import { NotificationSettings } from './components/NotificationSettings';
+import { AppearanceSettings } from './components/AppearanceSettings';
+import { PrivacySettings } from './components/PrivacySettings';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
