@@ -1,48 +1,47 @@
-import sql from 'mssql';
+import sql from "mssql"; // Using the regular mssql driver instead of msnodesqlv8
 
 const config = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  server: process.env.DB_SERVER,
-  pool: {
-    max: 10,
-    min: 0,
-    idleTimeoutMillis: 30000
-  },
+  database: process.env.DB_NAME || "master",
+  server: process.env.DB_SERVER || "",
+  user: process.env.DB_USER || "", 
+  password: process.env.DB_PASSWORD || "",
   options: {
-    encrypt: true, // for azure
-    trustServerCertificate: process.env.NODE_ENV !== 'production' // for local dev
-  }
+    encrypt: process.env.DB_ENCRYPT === "true",
+    trustServerCertificate: process.env.DB_TRUST_CERT === "true"
+  },
 };
 
-// Create a connection pool
+// Create a pool once for better performance
 let pool: sql.ConnectionPool | null = null;
 
-export async function getConnection() {
+export async function connectToDatabase() {
   try {
-    if (pool) {
-      return pool;
+    if (!pool) {
+      pool = await new sql.ConnectionPool(config).connect();
+      console.log("Connected to the database successfully!");
     }
-    pool = await sql.connect(config);
-    
-    // Setup event handlers
-    pool.on('error', (err) => {
-      console.error('SQL connection pool error:', err);
-      pool = null;
-    });
-    
     return pool;
-  } catch (error) {
-    console.error('Database connection error:', error);
-    throw error;
+  } catch (err) {
+    console.error("Error connecting to the database:", err);
+    throw err;
   }
 }
 
-// Helper function to execute queries
-export async function executeQuery<T>(query: string, params: Record<string, any> = {}): Promise<T[]> {
+export async function testConnection() {
   try {
-    const pool = await getConnection();
+    const pool = await connectToDatabase();
+    const result = await pool.request().query('SELECT 1 as test');
+    return { success: true, data: result.recordset };
+  } catch (err) {
+    console.error("Database test connection failed:", err);
+    return { success: false, error: err instanceof Error ? err.message : "Unknown error" };
+  }
+}
+
+// Generic query execution function
+export async function executeQuery<T = unknown>(query: string, params: Record<string, unknown> = {}): Promise<T[]> {
+  try {
+    const pool = await connectToDatabase();
     const request = pool.request();
     
     // Add parameters to the request
@@ -52,15 +51,15 @@ export async function executeQuery<T>(query: string, params: Record<string, any>
     
     const result = await request.query(query);
     return result.recordset as T[];
-  } catch (error) {
-    console.error('Query execution error:', error);
-    throw error;
+  } catch (err) {
+    console.error("Query execution failed:", err);
+    throw err;
   }
 }
 
-// Helper function for transactions
+// Transaction helper function
 export async function withTransaction<T>(callback: (transaction: sql.Transaction) => Promise<T>): Promise<T> {
-  const pool = await getConnection();
+  const pool = await connectToDatabase();
   const transaction = new sql.Transaction(pool);
   
   try {
@@ -68,9 +67,9 @@ export async function withTransaction<T>(callback: (transaction: sql.Transaction
     const result = await callback(transaction);
     await transaction.commit();
     return result;
-  } catch (error) {
+  } catch (err) {
     await transaction.rollback();
-    console.error('Transaction error:', error);
-    throw error;
+    console.error("Transaction failed:", err);
+    throw err;
   }
 }
