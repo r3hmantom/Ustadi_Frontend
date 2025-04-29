@@ -1,9 +1,11 @@
 # Project Structure Documentation
 
 ## Overview
+
 Ustadi Frontend is a Next.js application using React 19, TypeScript, and Tailwind CSS. The application follows the App Router pattern of Next.js and includes authentication features, UI components, and various API endpoints.
 
 ## Recent Changes - April 16, 2025
+
 - **Refactoring**: Refactored dashboard page to improve maintainability:
   - Split large dashboard page (>500 lines) into modular components
   - Implemented a proper type system for dashboard data
@@ -30,6 +32,7 @@ Ustadi Frontend is a Next.js application using React 19, TypeScript, and Tailwin
 ## Project Structure
 
 ### Root Directory
+
 - `package.json` - Project configuration with dependencies including Next.js 15.2.3, React 19, Tailwind CSS, and authentication libraries
 - `tsconfig.json` - TypeScript configuration
 - `next.config.ts` - Next.js configuration
@@ -39,12 +42,14 @@ Ustadi Frontend is a Next.js application using React 19, TypeScript, and Tailwin
 - `.env` - Environment variables (not versioned)
 
 ### `/app` - Main Application Directory
+
 - `/app/page.tsx` - Homepage component with neubrutalism design and Framer Motion animations
 - `/app/layout.tsx` - Root layout component with font settings and metadata
 - `/app/globals.css` - Global CSS styles
 - `/app/favicon.ico` - Site favicon
 
 #### `/app/api` - API Routes
+
 - `/app/api/auth/login/route.ts` - Login endpoint (currently returns a 501 "not implemented" response)
 - `/app/api/auth/register` - User registration endpoints
 - `/app/api/quizzes` - Quiz-related API endpoints
@@ -53,9 +58,11 @@ Ustadi Frontend is a Next.js application using React 19, TypeScript, and Tailwin
 - `/app/api/tasks` - Task management API endpoints
 
 #### `/app/auth` - Authentication Pages
+
 - Authentication-related pages and components
 
 #### `/app/dashboard` - Dashboard Pages
+
 - `/app/dashboard/page.tsx` - Main dashboard page using modular components
 - `/app/dashboard/types.ts` - Shared TypeScript types for dashboard components
 - `/app/dashboard/components/` - Modular dashboard components:
@@ -70,6 +77,7 @@ Ustadi Frontend is a Next.js application using React 19, TypeScript, and Tailwin
   - `WeeklyProgress.tsx` - Weekly progress visualization
 
 ### `/components` - Reusable UI Components
+
 - `/components/ui/button.tsx` - Button component with neubrutalism variants
 - `/components/ui/card.tsx` - Card component with neubrutalism variant
 - `/components/ui/checkbox.tsx` - Checkbox component
@@ -79,13 +87,16 @@ Ustadi Frontend is a Next.js application using React 19, TypeScript, and Tailwin
 - `/components/ui/animated-elements.tsx` - Animation components using Framer Motion
 
 ### `/lib` - Utility Functions and Helpers
+
 - `/lib/db.ts` - Database connection configuration using MSSQL
 - `/lib/utils.ts` - Common utility functions
 
 ### `/public` - Static Assets
+
 - Images, icons, and other static files
 
 ## Technology Stack
+
 - **Framework**: Next.js 15.2.3
 - **Language**: TypeScript
 - **UI Library**: React 19
@@ -97,6 +108,7 @@ Ustadi Frontend is a Next.js application using React 19, TypeScript, and Tailwin
 - **Authentication**: Custom implementation using bcryptjs and jsonwebtoken
 
 ## Development Commands
+
 - `npm run dev` - Start development server with Turbopack
 - `npm run build` - Build for production
 - `npm run start` - Start production server

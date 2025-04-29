@@ -82,16 +82,19 @@ Before running the application, you need to set up SQL Server:
 After setting up the database:
 
 1. Install the required dependencies:
+
    ```bash
    npm install bcryptjs jsonwebtoken
    ```
 
 2. Generate the Prisma client:
+
    ```bash
    npm run prisma:generate
    ```
 
 3. Start the development server:
+
    ```bash
    npm run dev
    ```
@@ -149,9 +152,9 @@ Headers: { "Authorization": "Bearer <token>" }
 ```
 POST /api/tasks
 Headers: { "Authorization": "Bearer <token>" }
-Body: { 
-  "title": "Task title", 
-  "description": "Task description", 
+Body: {
+  "title": "Task title",
+  "description": "Task description",
   "dueDate": "2023-05-01T15:00:00Z",
   "priority": 1,
   "tags": ["important", "exam"]
@@ -170,10 +173,10 @@ Headers: { "Authorization": "Bearer <token>" }
 ```
 PUT /api/tasks/{id}
 Headers: { "Authorization": "Bearer <token>" }
-Body: { 
-  "title": "Updated title", 
+Body: {
+  "title": "Updated title",
   "description": "Updated description",
-  "completedAt": "2023-05-01T16:00:00Z" 
+  "completedAt": "2023-05-01T16:00:00Z"
 }
 ```
 
