@@ -1,7 +1,9 @@
-import React from "react";
+type Props = {
+  children: React.ReactNode;
+};
 
-const DashboardLayout = () => {
-  return <div>DashboardLayout</div>;
+const DashboardLayout = ({ children }: Props) => {
+  return <div>DashboardLayout{children}</div>;
 };
 
 export default DashboardLayout;
