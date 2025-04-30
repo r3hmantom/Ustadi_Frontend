@@ -1,31 +1,9 @@
 import { NextResponse, NextRequest } from "next/server";
-import { executeQuery, ApiResponse } from "@/db/utils"; // Adjust path as necessary
-
-interface CreateTaskPayload {
-  student_id: number;
-  title: string;
-  description?: string | null;
-  due_date?: string | null;
-  priority?: number | null;
-  recurrence_pattern?: string | null;
-  parent_task_id?: number | null;
-  is_recurring?: boolean | null;
-}
+import { executeQuery } from "@/db/utils"; // Adjust path as necessary
+import { ApiResponse, CreateTaskPayload, TaskDB } from "@/lib/types";
 
 // Define the shape of a Task record (based on schema)
-interface Task {
-  task_id: number;
-  student_id: number;
-  title: string;
-  description: string | null;
-  due_date: Date | null;
-  priority: number | null;
-  recurrence_pattern: string | null;
-  parent_task_id: number | null;
-  created_at: Date;
-  completed_at: Date | null;
-  is_recurring: boolean;
-}
+type Task = TaskDB;
 
 /**
  * GET /api/tasks
@@ -103,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     const result: ApiResponse<Task[]> = await executeQuery<Task>(query, params);
 
-    if (result.success && result.data.length > 0) {
+    if (result.success && result.data && result.data.length > 0) {
       // Return the newly created task
       return NextResponse.json(
         { success: true, data: result.data[0] },
