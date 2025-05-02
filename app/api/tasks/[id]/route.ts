@@ -181,7 +181,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const taskId = parseInt(params.id, 10);
+    const paramsId = await params.id;
+    const taskId = parseInt(paramsId, 10);
 
     if (isNaN(taskId)) {
       return NextResponse.json(

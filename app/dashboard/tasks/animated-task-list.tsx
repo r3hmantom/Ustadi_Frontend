@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Edit2, Check, Trash2, Loader2, Calendar, Star } from "lucide-react";
 
 // Custom function to get color based on priority
-const getPriorityColor = (priority: number) => {
+export const getPriorityColor = (priority: number) => {
   switch (priority) {
     case 5:
       return "bg-red-500";
@@ -82,7 +82,8 @@ interface AnimatedTaskListProps {
   onEdit: (task: Task) => void;
   onComplete?: (taskId: number) => void;
   onDelete?: (taskId: number) => void;
-  processingTaskIds?: TaskProcessingState; // Updated type
+  processingTaskIds?: TaskProcessingState;
+  onViewDetails?: (task: Task) => void; // New prop for viewing task details
 }
 
 export const AnimatedTaskList = ({
@@ -93,6 +94,7 @@ export const AnimatedTaskList = ({
   onComplete,
   onDelete,
   processingTaskIds = {},
+  onViewDetails, // New prop
 }: AnimatedTaskListProps) => {
   // Helper function to check if a task has a specific operation in progress
   const isTaskProcessing = (taskId: number, operation?: OperationType) => {
@@ -177,12 +179,14 @@ export const AnimatedTaskList = ({
                 overflow-hidden transition-all 
                 ${isCompleted ? "opacity-60" : ""}
                 hover:shadow-md border-l-4
+                ${onViewDetails ? "cursor-pointer" : ""}
               `}
                 style={{
                   borderLeftColor: task.priority
                     ? getPriorityBorderColor(task.priority)
                     : "transparent",
                 }}
+                onClick={onViewDetails ? () => onViewDetails(task) : undefined}
               >
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">

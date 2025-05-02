@@ -10,7 +10,7 @@ CREATE TABLE Students (
 
 CREATE TABLE Tasks (
     task_id INT PRIMARY KEY IDENTITY(1,1),
-    student_id INT FOREIGN KEY REFERENCES Students(student_id),
+    student_id INT FOREIGN KEY REFERENCES Students(student_id) ON DELETE CASCADE,
     title NVARCHAR(255) NOT NULL,
     description NVARCHAR(MAX),
     due_date DATETIME,
@@ -53,7 +53,7 @@ CREATE TABLE StudySessions (
 
 CREATE TABLE Comments (
     comment_id INT PRIMARY KEY IDENTITY(1,1),
-    task_id INT FOREIGN KEY REFERENCES Tasks(task_id),
+    task_id INT FOREIGN KEY REFERENCES Tasks(task_id) ON DELETE CASCADE,
     student_id INT FOREIGN KEY REFERENCES Students(student_id),
     content NVARCHAR(MAX) NOT NULL,
     created_at DATETIME DEFAULT GETDATE(),
@@ -82,7 +82,7 @@ CREATE TABLE Quizzes (
 
 CREATE TABLE Questions (
     question_id INT PRIMARY KEY IDENTITY(1,1),
-    quiz_id INT FOREIGN KEY REFERENCES Quizzes(quiz_id),
+    quiz_id INT FOREIGN KEY REFERENCES Quizzes(quiz_id) ON DELETE CASCADE,
     question_type NVARCHAR(50) CHECK (question_type IN ('MCQ', 'Short Answer', 'Long Answer')),
     content NVARCHAR(MAX) NOT NULL,
     correct_answer NVARCHAR(MAX) NOT NULL

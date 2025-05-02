@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   fetchTasks,
@@ -16,6 +16,7 @@ import {
 import { TaskFormData } from "./edit-task-form";
 import { AnimatedTaskList } from "./animated-task-list";
 import { TaskDialog } from "./task-dialog";
+import { TaskDetailView } from "./task-detail-view";
 import useUser from "@/lib/hooks/useUser";
 import { Task } from "@/db/types";
 
@@ -27,6 +28,7 @@ const TasksPage = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // Replace simple Set with an object that tracks operation types
   type OperationType = "deleting" | "editing" | "completing";
@@ -74,6 +76,17 @@ const TasksPage = () => {
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
     setIsDialogOpen(true);
+    setSelectedTask(null); // Close task detail view when editing
+  };
+
+  // Handle viewing task details
+  const handleViewTaskDetails = (task: Task) => {
+    setSelectedTask(task);
+  };
+
+  // Handle closing task details
+  const handleCloseTaskDetails = () => {
+    setSelectedTask(null);
   };
 
   // Handle task creation and updating
@@ -91,6 +104,11 @@ const TasksPage = () => {
             task.task_id === taskId ? updatedTask : task
           )
         );
+
+        // If this is the currently selected task, update it
+        if (selectedTask?.task_id === taskId) {
+          setSelectedTask(updatedTask);
+        }
       } else {
         // This is a create
         const payload = {
@@ -135,6 +153,11 @@ const TasksPage = () => {
         prevTasks.map((task) => (task.task_id === taskId ? updatedTask : task))
       );
 
+      // If this is the currently selected task, update it
+      if (selectedTask?.task_id === taskId) {
+        setSelectedTask(updatedTask);
+      }
+
       toast.success("Task marked as completed!");
     } catch (err) {
       setError(
@@ -172,6 +195,11 @@ const TasksPage = () => {
         prevTasks.filter((task) => task.task_id !== taskId)
       );
 
+      // If this is the currently selected task, close the detail view
+      if (selectedTask?.task_id === taskId) {
+        setSelectedTask(null);
+      }
+
       toast.success("Task deleted successfully!");
     } catch (err) {
       setError(
@@ -197,85 +225,117 @@ const TasksPage = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-6 max-w-4xl">
-      <div className="flex justify-between items-center">
-        <motion.h1
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="text-2xl font-bold"
-        >
-          My Tasks
-        </motion.h1>
+      {selectedTask ? (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <Button
+              variant="ghost"
+              onClick={handleCloseTaskDetails}
+              className="gap-2"
+            >
+              <X className="h-4 w-4" />
+              Back to task list
+            </Button>
+          </div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Button onClick={handleCreateTask} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Create Task
-          </Button>
-        </motion.div>
-      </div>
-
-      {/* Error Display */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Task Tabs */}
-      <Tabs
-        defaultValue="active"
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="w-full"
-      >
-        <TabsList className="w-full mb-6">
-          <TabsTrigger value="active" className="flex-1">
-            Active Tasks
-            {activeTasks.length > 0 && (
-              <span className="ml-2 text-xs py-0.5 px-2 rounded-full bg-primary/20">
-                {activeTasks.length}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="completed" className="flex-1">
-            Completed Tasks
-            {completedTasks.length > 0 && (
-              <span className="ml-2 text-xs py-0.5 px-2 rounded-full bg-primary/20">
-                {completedTasks.length}
-              </span>
-            )}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="active" className="mt-2">
-          <AnimatedTaskList
-            tasks={activeTasks}
-            isLoading={isLoading}
+          <TaskDetailView
+            task={selectedTask}
             studentId={studentId}
             onEdit={handleEditTask}
             onComplete={handleCompleteTask}
             onDelete={handleDeleteTask}
-            processingTaskIds={taskProcessingState}
+            isProcessing={{
+              editing: taskProcessingState[selectedTask.task_id]?.editing,
+              completing: taskProcessingState[selectedTask.task_id]?.completing,
+              deleting: taskProcessingState[selectedTask.task_id]?.deleting,
+            }}
           />
-        </TabsContent>
+        </div>
+      ) : (
+        <>
+          <div className="flex justify-between items-center">
+            <motion.h1
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-2xl font-bold"
+            >
+              My Tasks
+            </motion.h1>
 
-        <TabsContent value="completed" className="mt-2">
-          <AnimatedTaskList
-            tasks={completedTasks}
-            isLoading={isLoading}
-            studentId={studentId}
-            onEdit={handleEditTask}
-            onDelete={handleDeleteTask}
-            processingTaskIds={taskProcessingState}
-          />
-        </TabsContent>
-      </Tabs>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button onClick={handleCreateTask} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Create Task
+              </Button>
+            </motion.div>
+          </div>
+
+          {/* Error Display */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Task Tabs */}
+          <Tabs
+            defaultValue="active"
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <TabsList className="w-full mb-6">
+              <TabsTrigger value="active" className="flex-1">
+                Active Tasks
+                {activeTasks.length > 0 && (
+                  <span className="ml-2 text-xs py-0.5 px-2 rounded-full bg-primary/20">
+                    {activeTasks.length}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="completed" className="flex-1">
+                Completed Tasks
+                {completedTasks.length > 0 && (
+                  <span className="ml-2 text-xs py-0.5 px-2 rounded-full bg-primary/20">
+                    {completedTasks.length}
+                  </span>
+                )}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="active" className="mt-2">
+              <AnimatedTaskList
+                tasks={activeTasks}
+                isLoading={isLoading}
+                studentId={studentId}
+                onEdit={handleEditTask}
+                onComplete={handleCompleteTask}
+                onDelete={handleDeleteTask}
+                processingTaskIds={taskProcessingState}
+                onViewDetails={handleViewTaskDetails}
+              />
+            </TabsContent>
+
+            <TabsContent value="completed" className="mt-2">
+              <AnimatedTaskList
+                tasks={completedTasks}
+                isLoading={isLoading}
+                studentId={studentId}
+                onEdit={handleEditTask}
+                onDelete={handleDeleteTask}
+                processingTaskIds={taskProcessingState}
+                onViewDetails={handleViewTaskDetails}
+              />
+            </TabsContent>
+          </Tabs>
+        </>
+      )}
 
       {/* Task Dialog for Create/Edit */}
       <TaskDialog
