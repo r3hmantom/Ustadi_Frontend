@@ -5,16 +5,28 @@ import {
   CardTitle,
   CardContent,
   CardDescription,
+  CardFooter,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Task } from "@/app/services/taskService";
 
 interface TaskListProps {
   tasks: Task[];
   isLoading: boolean;
   studentId: number;
+  onEdit: (task: Task) => void;
+  onComplete?: (taskId: number) => void;
+  onDelete?: (taskId: number) => void;
 }
 
-export const TaskList = ({ tasks, isLoading, studentId }: TaskListProps) => {
+export const TaskList = ({
+  tasks,
+  isLoading,
+  studentId,
+  onEdit,
+  onComplete,
+  onDelete,
+}: TaskListProps) => {
   if (isLoading) {
     return <p>Loading tasks...</p>;
   }
@@ -42,7 +54,29 @@ export const TaskList = ({ tasks, isLoading, studentId }: TaskListProps) => {
               <p>{task.description}</p>
             </CardContent>
           )}
-          {/* Add CardFooter for actions like complete, edit, delete later */}
+          <CardFooter className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => onEdit(task)}>
+              Edit
+            </Button>
+            {onComplete && !task.completed_at && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onComplete(task.task_id)}
+              >
+                Complete
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => onDelete(task.task_id)}
+              >
+                Delete
+              </Button>
+            )}
+          </CardFooter>
         </Card>
       ))}
     </div>

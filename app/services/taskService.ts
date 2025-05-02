@@ -49,3 +49,65 @@ export const createTask = async (payload: CreateTaskPayload): Promise<Task> => {
 
   return result.data!;
 };
+
+/**
+ * Interface for task update payload
+ */
+export interface UpdateTaskPayload {
+  title?: string;
+  description?: string | null;
+  due_date?: string | null;
+  priority?: number | null;
+  recurrence_pattern?: string | null;
+  parent_task_id?: number | null;
+  is_recurring?: boolean;
+  completed_at?: string | null;
+}
+
+/**
+ * Updates an existing task
+ */
+export const updateTask = async (
+  taskId: number,
+  payload: UpdateTaskPayload
+): Promise<Task> => {
+  const response = await fetch(`/api/tasks/${taskId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const result: ApiResponse<Task> = await response.json();
+
+  if (!response.ok || !result.success) {
+    throw new Error(
+      result.error?.message || `Failed to update task: ${response.statusText}`
+    );
+  }
+
+  return result.data!;
+};
+
+/**
+ * Deletes a task by ID
+ */
+export const deleteTask = async (taskId: number): Promise<Task> => {
+  const response = await fetch(`/api/tasks/${taskId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const result: ApiResponse<Task> = await response.json();
+
+  if (!response.ok || !result.success) {
+    throw new Error(
+      result.error?.message || `Failed to delete task: ${response.statusText}`
+    );
+  }
+
+  return result.data!;
+};
