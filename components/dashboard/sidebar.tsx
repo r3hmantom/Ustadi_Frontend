@@ -50,6 +50,11 @@ const navItems: NavItem[] = [
     icon: <Trophy className="w-5 h-5" />,
   },
   {
+    label: "Quizzes",
+    href: "/dashboard/quizzes",
+    icon: <Book className="w-5 h-5" />,
+  },
+  {
     label: "Revisions",
     href: "/dashboard/revisions",
     icon: <Book className="w-5 h-5" />,
