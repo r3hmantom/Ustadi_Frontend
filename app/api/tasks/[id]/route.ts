@@ -1,8 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
 import { executeQuery } from "@/db/utils";
-import { ApiResponse, TaskDB } from "@/lib/types";
-
-type Task = TaskDB;
 
 /**
  * GET /api/tasks/{id}
@@ -25,10 +22,7 @@ export async function GET(
     const query = "SELECT * FROM Tasks WHERE task_id = @taskId";
     const queryParams = { taskId };
 
-    const result: ApiResponse<Task[]> = await executeQuery<Task>(
-      query,
-      queryParams
-    );
+    const result = await executeQuery(query, queryParams);
 
     if (result.success && result.data && result.data.length > 0) {
       return NextResponse.json(
@@ -76,7 +70,7 @@ export async function PATCH(
 
     // Build dynamic update query based on provided fields
     const updates: string[] = [];
-    const queryParams: Record<string, unknown> = { task_id: taskId };
+    const queryParams: Record<string, unknown> = { taskId };
 
     // Only include fields that are provided in the update
     if (body.title !== undefined) {
@@ -90,8 +84,8 @@ export async function PATCH(
     }
 
     if (body.due_date !== undefined) {
-      updates.push("due_date = @due_date");
-      queryParams.due_date = body.due_date ? new Date(body.due_date) : null;
+      updates.push("due_date = @dueDate");
+      queryParams.dueDate = body.due_date ? new Date(body.due_date) : null;
     }
 
     if (body.priority !== undefined) {
@@ -100,23 +94,23 @@ export async function PATCH(
     }
 
     if (body.recurrence_pattern !== undefined) {
-      updates.push("recurrence_pattern = @recurrence_pattern");
-      queryParams.recurrence_pattern = body.recurrence_pattern;
+      updates.push("recurrence_pattern = @recurrencePattern");
+      queryParams.recurrencePattern = body.recurrence_pattern;
     }
 
     if (body.parent_task_id !== undefined) {
-      updates.push("parent_task_id = @parent_task_id");
-      queryParams.parent_task_id = body.parent_task_id;
+      updates.push("parent_task_id = @parentTaskId");
+      queryParams.parentTaskId = body.parent_task_id;
     }
 
     if (body.is_recurring !== undefined) {
-      updates.push("is_recurring = @is_recurring");
-      queryParams.is_recurring = body.is_recurring;
+      updates.push("is_recurring = @isRecurring");
+      queryParams.isRecurring = body.is_recurring;
     }
 
     if (body.completed_at !== undefined) {
-      updates.push("completed_at = @completed_at");
-      queryParams.completed_at = body.completed_at
+      updates.push("completed_at = @completedAt");
+      queryParams.completedAt = body.completed_at
         ? new Date(body.completed_at)
         : null;
     }
@@ -136,13 +130,10 @@ export async function PATCH(
       UPDATE Tasks
       SET ${updates.join(", ")}
       OUTPUT INSERTED.*
-      WHERE task_id = @task_id;
+      WHERE task_id = @taskId;
     `;
 
-    const result: ApiResponse<Task[]> = await executeQuery<Task>(
-      query,
-      queryParams
-    );
+    const result = await executeQuery(query, queryParams);
 
     if (result.success && result.data && result.data.length > 0) {
       return NextResponse.json(
@@ -162,9 +153,8 @@ export async function PATCH(
     }
   } catch (error) {
     console.error("Error processing PATCH /api/tasks/{id}:", error);
-    const message =
-      error instanceof Error ? error.message : "An unexpected error occurred";
 
+    // Handle JSON parsing errors specially
     if (error instanceof SyntaxError) {
       return NextResponse.json(
         { success: false, error: { message: "Invalid JSON payload" } },
@@ -172,8 +162,11 @@ export async function PATCH(
       );
     }
 
+    // Handle all other errors
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred";
     return NextResponse.json(
-      { success: false, error: { message: message } },
+      { success: false, error: { message } },
       { status: 500 }
     );
   }
@@ -200,14 +193,11 @@ export async function DELETE(
     const query = `
       DELETE FROM Tasks
       OUTPUT DELETED.*
-      WHERE task_id = @task_id;
+      WHERE task_id = @taskId;
     `;
-    const queryParams = { task_id: taskId };
+    const queryParams = { taskId };
 
-    const result: ApiResponse<Task[]> = await executeQuery<Task>(
-      query,
-      queryParams
-    );
+    const result = await executeQuery(query, queryParams);
 
     if (result.success && result.data && result.data.length > 0) {
       return NextResponse.json(

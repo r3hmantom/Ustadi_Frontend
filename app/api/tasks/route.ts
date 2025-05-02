@@ -1,39 +1,52 @@
 import { NextResponse, NextRequest } from "next/server";
-import { executeQuery } from "@/db/utils"; // Adjust path as necessary
-import { ApiResponse, CreateTaskPayload, TaskDB } from "@/lib/types";
-
-// Define the shape of a Task record (based on schema)
-type Task = TaskDB;
+import { executeQuery } from "@/db/utils";
 
 /**
  * GET /api/tasks
  * Fetches tasks, optionally filtered by student_id.
  */
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const studentId = searchParams.get("student_id");
+  try {
+    const { searchParams } = new URL(request.url);
+    const studentId = searchParams.get("student_id");
 
-  let query = "SELECT * FROM Tasks";
-  const params: { [key: string]: unknown } = {};
+    let query = "SELECT * FROM Tasks";
+    const params: { [key: string]: unknown } = {};
 
-  if (studentId) {
-    query += " WHERE student_id = @studentId";
-    params.studentId = parseInt(studentId, 10); // Ensure it's a number
-    if (isNaN(params.studentId as number)) {
-      return NextResponse.json(
-        { success: false, error: { message: "Invalid student_id parameter" } },
-        { status: 400 }
-      );
+    if (studentId) {
+      const studentIdNum = parseInt(studentId, 10);
+
+      if (isNaN(studentIdNum)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: { message: "Invalid student_id parameter" },
+          },
+          { status: 400 }
+        );
+      }
+
+      query += " WHERE student_id = @studentId";
+      params.studentId = studentIdNum;
     }
-  }
-  query += " ORDER BY created_at DESC"; // Example ordering
 
-  const result: ApiResponse<Task[]> = await executeQuery<Task>(query, params);
+    query += " ORDER BY created_at DESC";
 
-  if (result.success) {
-    return NextResponse.json(result);
-  } else {
-    return NextResponse.json(result, { status: 500 });
+    const result = await executeQuery(query, params);
+
+    if (result.success) {
+      return NextResponse.json(result);
+    } else {
+      return NextResponse.json(result, { status: 500 });
+    }
+  } catch (error) {
+    console.error("Error processing GET /api/tasks:", error);
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred";
+    return NextResponse.json(
+      { success: false, error: { message } },
+      { status: 500 }
+    );
   }
 }
 
@@ -43,9 +56,9 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const body: CreateTaskPayload = await request.json();
+    const body = await request.json();
 
-    // Basic validation
+    // Required field validation
     if (!body.student_id || !body.title) {
       return NextResponse.json(
         {
@@ -56,6 +69,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Build query with consistent parameter naming
     const query = `
       INSERT INTO Tasks (
         student_id, title, description, due_date, priority,
@@ -63,56 +77,57 @@ export async function POST(request: NextRequest) {
       )
       OUTPUT INSERTED.*
       VALUES (
-        @student_id, @title, @description, @due_date, @priority,
-        @recurrence_pattern, @parent_task_id, @is_recurring
+        @studentId, @title, @description, @dueDate, @priority,
+        @recurrencePattern, @parentTaskId, @isRecurring
       );
     `;
 
+    // Map request body to params with consistent camelCase naming
     const params = {
-      student_id: body.student_id,
+      studentId: body.student_id,
       title: body.title,
       description: body.description ?? null,
-      due_date: body.due_date ? new Date(body.due_date) : null,
-      priority: body.priority ?? 3, // Default priority if not provided
-      recurrence_pattern: body.recurrence_pattern ?? null,
-      parent_task_id: body.parent_task_id ?? null,
-      is_recurring: body.is_recurring ?? false, // Default is_recurring
+      dueDate: body.due_date ? new Date(body.due_date) : null,
+      priority: body.priority ?? 3,
+      recurrencePattern: body.recurrence_pattern ?? null,
+      parentTaskId: body.parent_task_id ?? null,
+      isRecurring: body.is_recurring ?? false,
     };
 
-    const result: ApiResponse<Task[]> = await executeQuery<Task>(query, params);
+    const result = await executeQuery(query, params);
 
     if (result.success && result.data && result.data.length > 0) {
-      // Return the newly created task
       return NextResponse.json(
         { success: true, data: result.data[0] },
         { status: 201 }
       );
-    } else if (result.success) {
-      // Should not happen with OUTPUT INSERTED.* if insert worked, but handle defensively
+    } else {
+      // Handle both no data case and execution error case
+      const errorMessage = result.success
+        ? "Task creation succeeded but no data returned"
+        : result.error?.message || "Unknown database error";
+
       return NextResponse.json(
-        {
-          success: false,
-          error: { message: "Task creation succeeded but no data returned" },
-        },
+        { success: false, error: { message: errorMessage } },
         { status: 500 }
       );
-    } else {
-      // executeQuery handles logging, just return the formatted error
-      return NextResponse.json(result, { status: 500 });
     }
   } catch (error) {
     console.error("Error processing POST /api/tasks:", error);
-    const message =
-      error instanceof Error ? error.message : "An unexpected error occurred";
-    // Check for JSON parsing errors specifically
+
+    // Handle JSON parsing errors
     if (error instanceof SyntaxError) {
       return NextResponse.json(
         { success: false, error: { message: "Invalid JSON payload" } },
         { status: 400 }
       );
     }
+
+    // Handle all other errors
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred";
     return NextResponse.json(
-      { success: false, error: { message: message } },
+      { success: false, error: { message } },
       { status: 500 }
     );
   }

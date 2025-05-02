@@ -1,8 +1,7 @@
 CREATE TABLE Students (
     student_id INT PRIMARY KEY IDENTITY(1,1),
     email NVARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARBINARY(256) NOT NULL,
-    salt VARBINARY(64) NOT NULL,
+    password NVARCHAR(255) NOT NULL,
     full_name NVARCHAR(255),
     registration_date DATETIME DEFAULT GETDATE(),
     last_login DATETIME,
