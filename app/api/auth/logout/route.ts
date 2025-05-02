@@ -1,13 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { ApiResponse } from "@/db/types";
 
-export async function POST(request: NextRequest) {
-  console.log(request);
+interface LogoutResponse {
+  message: string;
+}
+
+export async function POST(): Promise<NextResponse> {
   try {
     // Create a response
     const response = NextResponse.json({
       success: true,
-      message: "Logged out successfully",
-    });
+      data: { message: "Logged out successfully" },
+    } as ApiResponse<LogoutResponse>);
 
     // Clear the auth token cookie
     response.cookies.delete("auth_token");
@@ -19,7 +23,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: { message: "Internal server error" },
-      },
+      } as ApiResponse<never>,
       { status: 500 }
     );
   }

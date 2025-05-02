@@ -1,6 +1,7 @@
 import { executeQuery } from "@/db/utils";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { Student, UserProfile } from "@/db/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,7 +24,10 @@ export async function POST(request: NextRequest) {
       SELECT email FROM Students WHERE email = @Email
     `;
 
-    const emailCheck = await executeQuery(checkEmailQuery, { Email: email });
+    const emailCheck = await executeQuery<Pick<Student, "email">>(
+      checkEmailQuery,
+      { Email: email }
+    );
 
     if (emailCheck.success && emailCheck.data.length > 0) {
       return NextResponse.json(
@@ -55,14 +59,22 @@ export async function POST(request: NextRequest) {
       FullName: fullName,
     };
 
-    const result = await executeQuery(query, params);
+    const result = await executeQuery<
+      Pick<Student, "student_id" | "email" | "full_name">
+    >(query, params);
 
     if (result.success) {
-      // Return user data (excluding password)
+      // Map to UserProfile and return user data (excluding password)
+      const userProfile: UserProfile = {
+        studentId: result.data[0].student_id,
+        email: result.data[0].email,
+        fullName: result.data[0].full_name,
+      };
+
       return NextResponse.json(
         {
           success: true,
-          data: result.data[0],
+          data: userProfile,
         },
         { status: 201 }
       );

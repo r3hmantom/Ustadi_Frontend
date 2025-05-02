@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { executeQuery } from "@/db/utils";
+import { UserProfile, ApiResponse } from "@/db/types";
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     // Get token from cookies
     const token = request.cookies.get("auth_token")?.value;
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
         {
           success: false,
           error: { message: "Unauthorized" },
-        },
+        } as ApiResponse<never>,
         { status: 401 }
       );
     }
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
         {
           success: false,
           error: { message: "Invalid token" },
-        },
+        } as ApiResponse<never>,
         { status: 401 }
       );
 
@@ -51,14 +52,16 @@ export async function GET(request: NextRequest) {
       WHERE student_id = @StudentId
     `;
 
-    const result = await executeQuery(query, { StudentId: studentId });
+    const result = await executeQuery<UserProfile>(query, {
+      StudentId: studentId,
+    });
 
     if (!result.success || result.data.length === 0) {
       const response = NextResponse.json(
         {
           success: false,
           error: { message: "User not found" },
-        },
+        } as ApiResponse<never>,
         { status: 404 }
       );
 
@@ -71,14 +74,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: result.data[0],
-    });
+    } as ApiResponse<UserProfile>);
   } catch (error) {
     console.error("Error in GET /me:", error);
     return NextResponse.json(
       {
         success: false,
         error: { message: "Internal server error" },
-      },
+      } as ApiResponse<never>,
       { status: 500 }
     );
   }

@@ -2,6 +2,7 @@ import { executeQuery } from "@/db/utils";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { Student, UserProfile } from "@/db/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,7 +27,9 @@ export async function POST(request: NextRequest) {
       WHERE email = @Email
     `;
 
-    const result = await executeQuery(query, { Email: email });
+    const result = await executeQuery<Student>(query, {
+      Email: email,
+    });
 
     // Check if user exists and result is successful
     if (!result.success || result.data.length === 0) {
@@ -85,15 +88,20 @@ export async function POST(request: NextRequest) {
       { expiresIn: "7d" }
     );
 
-    // Remove password from user object before sending the response
-    delete user.password;
+    // Map database model to client-facing user profile
+    const userProfile: UserProfile = {
+      studentId: user.student_id,
+      email: user.email,
+      fullName: user.full_name,
+      isActive: Boolean(user.is_active),
+    };
 
     // Set the token as an HTTP-only cookie and send the response
     const response = NextResponse.json(
       {
         success: true,
         data: {
-          user,
+          user: userProfile,
           token,
         },
       },
