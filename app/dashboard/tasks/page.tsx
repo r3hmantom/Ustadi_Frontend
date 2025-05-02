@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   fetchTasks,
@@ -23,11 +23,7 @@ const TasksPage = () => {
   const studentId = user?.studentId;
 
   // Fetch tasks on component mount
-  useEffect(() => {
-    loadTasks();
-  }, [studentId]); // Re-fetch if studentId changes
-
-  const loadTasks = async () => {
+  const loadTasks = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -41,7 +37,11 @@ const TasksPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [studentId]);
+
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]); // Re-fetch if loadTasks changes
 
   // Handle task creation and updating
   const handleTaskSubmit = async (formData: TaskFormData, taskId?: number) => {
