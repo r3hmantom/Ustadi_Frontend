@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { SignUpFormData } from "./types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +50,11 @@ export const SignUp = ({ onSwitchToSignIn }: SignUpProps) => {
       if (!response.ok) {
         throw new Error(result.message || "Failed to sign up");
       }
+
+      // Show success toast notification
+      toast.success(
+        "Account created successfully! Redirecting to dashboard..."
+      );
 
       // Redirect to dashboard or login page after successful registration
       router.push("/dashboard");

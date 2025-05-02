@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { SignInFormData } from "./types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,9 @@ export const SignIn = ({ onSwitchToSignUp }: SignInProps) => {
       if (!response.ok) {
         throw new Error(result.message || "Failed to sign in");
       }
+
+      // Show success toast notification
+      toast.success("Signed in successfully! Redirecting to dashboard...");
 
       // Redirect to dashboard after successful login
       router.push("/dashboard");
