@@ -12,14 +12,14 @@ import {
   CardFooter,
   CardDescription,
 } from "@/components/ui/card";
-import { NewTaskForm } from "@/lib/types";
+import { TaskFormData } from "./edit-task-form";
 
 interface CreateTaskFormProps {
-  onSubmit: (formData: NewTaskForm) => Promise<void>;
+  onSubmit: (formData: TaskFormData) => Promise<void>;
 }
 
 export const CreateTaskForm = ({ onSubmit }: CreateTaskFormProps) => {
-  const [formState, setFormState] = useState<NewTaskForm>({
+  const [formState, setFormState] = useState<TaskFormData>({
     title: "",
     description: "",
     due_date: "",

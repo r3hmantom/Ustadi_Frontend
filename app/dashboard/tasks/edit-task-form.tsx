@@ -12,13 +12,21 @@ import {
   CardFooter,
   CardDescription,
 } from "@/components/ui/card";
-import { NewTaskForm } from "@/lib/types";
-import { Task } from "@/app/services/taskService";
+import { Task } from "@/db/types";
+
+// Type for the form data which represents a new task or task update
+export interface TaskFormData {
+  title: string;
+  description: string;
+  due_date: string;
+  priority: number;
+  is_recurring: boolean;
+}
 
 interface EditTaskFormProps {
-  onSubmit: (formData: NewTaskForm, taskId?: number) => Promise<void>;
+  onSubmit: (formData: TaskFormData, taskId?: number) => Promise<void>;
   onCancel?: () => void;
-  task?: Task | null;
+  task: Task | null;
 }
 
 export const EditTaskForm = ({
@@ -28,7 +36,7 @@ export const EditTaskForm = ({
 }: EditTaskFormProps) => {
   const isEditMode = !!task;
 
-  const [formState, setFormState] = useState<NewTaskForm>({
+  const [formState, setFormState] = useState<TaskFormData>({
     title: "",
     description: "",
     due_date: "",
@@ -42,9 +50,11 @@ export const EditTaskForm = ({
       setFormState({
         title: task.title,
         description: task.description || "",
-        due_date: task.due_date ? task.due_date.split("T")[0] : "", // Convert ISO date to YYYY-MM-DD
+        due_date: task.due_date
+          ? new Date(task.due_date).toISOString().split("T")[0]
+          : "", // Convert to YYYY-MM-DD
         priority: task.priority || 3,
-        is_recurring: task.is_recurring,
+        is_recurring: Boolean(task.is_recurring),
       });
     }
   }, [task]);

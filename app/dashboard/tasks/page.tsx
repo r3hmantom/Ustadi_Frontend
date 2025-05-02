@@ -7,22 +7,20 @@ import {
   createTask,
   updateTask,
   deleteTask,
-  UpdateTaskPayload,
 } from "@/app/services/taskService";
-import { TaskUI, NewTaskForm } from "@/lib/types";
-import { EditTaskForm } from "./edit-task-form";
+import { EditTaskForm, TaskFormData } from "./edit-task-form";
 import { TaskList } from "./task-list";
+import useUser from "@/lib/hooks/useUser";
+import { Task } from "@/db/types";
 
 const TasksPage = () => {
-  const [tasks, setTasks] = useState<TaskUI[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [editingTask, setEditingTask] = useState<TaskUI | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  // --- Hardcoded student_id for now ---
-  // In a real app, get this from auth context or session
-  const studentId = 1;
-  // --- ---
+  const { user } = useUser();
+  const studentId = user?.studentId;
 
   // Fetch tasks on component mount
   useEffect(() => {
@@ -46,16 +44,13 @@ const TasksPage = () => {
   };
 
   // Handle task creation and updating
-  const handleTaskSubmit = async (formData: NewTaskForm, taskId?: number) => {
+  const handleTaskSubmit = async (formData: TaskFormData, taskId?: number) => {
     setError(null);
 
     try {
       if (taskId) {
         // This is an update
-        const updatedTask = await updateTask(
-          taskId,
-          formData as UpdateTaskPayload
-        );
+        const updatedTask = await updateTask(taskId, formData);
 
         // Update the task in the list
         setTasks((prevTasks) =>

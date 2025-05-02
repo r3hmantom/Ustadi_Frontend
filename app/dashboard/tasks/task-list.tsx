@@ -8,12 +8,12 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Task } from "@/app/services/taskService";
+import { Task } from "@/db/types";
 
 interface TaskListProps {
   tasks: Task[];
   isLoading: boolean;
-  studentId: number;
+  studentId: number | undefined;
   onEdit: (task: Task) => void;
   onComplete?: (taskId: number) => void;
   onDelete?: (taskId: number) => void;

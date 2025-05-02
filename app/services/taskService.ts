@@ -1,13 +1,16 @@
-// Task API service to handle all task-related API calls
-import { TaskUI, ApiResponse, CreateTaskPayload } from "@/lib/types";
-
-// Use the shared TaskUI interface for frontend tasks
-export type Task = TaskUI;
+import { Task } from "@/db/types";
+import { TaskFormData } from "../dashboard/tasks/edit-task-form";
 
 /**
  * Fetches tasks for a specific student
  */
-export const fetchTasks = async (studentId: number): Promise<Task[]> => {
+export const fetchTasks = async (
+  studentId: number | undefined
+): Promise<Task[]> => {
+  if (!studentId) {
+    return [];
+  }
+
   const response = await fetch(`/api/tasks?student_id=${studentId}`);
 
   if (!response.ok) {
@@ -18,7 +21,7 @@ export const fetchTasks = async (studentId: number): Promise<Task[]> => {
     );
   }
 
-  const result: ApiResponse<Task[]> = await response.json();
+  const result = await response.json();
 
   if (result.success && result.data) {
     return result.data;
@@ -30,7 +33,9 @@ export const fetchTasks = async (studentId: number): Promise<Task[]> => {
 /**
  * Creates a new task
  */
-export const createTask = async (payload: CreateTaskPayload): Promise<Task> => {
+export const createTask = async (
+  payload: TaskFormData & { student_id?: number }
+): Promise<Task> => {
   const response = await fetch("/api/tasks", {
     method: "POST",
     headers: {
@@ -39,7 +44,7 @@ export const createTask = async (payload: CreateTaskPayload): Promise<Task> => {
     body: JSON.stringify(payload),
   });
 
-  const result: ApiResponse<Task> = await response.json();
+  const result = await response.json();
 
   if (!response.ok || !result.success) {
     throw new Error(
@@ -51,25 +56,18 @@ export const createTask = async (payload: CreateTaskPayload): Promise<Task> => {
 };
 
 /**
- * Interface for task update payload
+ * Interface for task update payload - can be partial fields of a task
  */
-export interface UpdateTaskPayload {
-  title?: string;
-  description?: string | null;
-  due_date?: string | null;
-  priority?: number | null;
-  recurrence_pattern?: string | null;
-  parent_task_id?: number | null;
-  is_recurring?: boolean;
+export type TaskUpdatePayload = Partial<TaskFormData> & {
   completed_at?: string | null;
-}
+};
 
 /**
  * Updates an existing task
  */
 export const updateTask = async (
   taskId: number,
-  payload: UpdateTaskPayload
+  payload: TaskUpdatePayload
 ): Promise<Task> => {
   const response = await fetch(`/api/tasks/${taskId}`, {
     method: "PATCH",
@@ -79,7 +77,7 @@ export const updateTask = async (
     body: JSON.stringify(payload),
   });
 
-  const result: ApiResponse<Task> = await response.json();
+  const result = await response.json();
 
   if (!response.ok || !result.success) {
     throw new Error(
@@ -101,7 +99,7 @@ export const deleteTask = async (taskId: number): Promise<Task> => {
     },
   });
 
-  const result: ApiResponse<Task> = await response.json();
+  const result = await response.json();
 
   if (!response.ok || !result.success) {
     throw new Error(
