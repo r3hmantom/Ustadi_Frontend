@@ -14,9 +14,19 @@ const config = {
 let pool: sql.ConnectionPool | null = null;
 
 async function connectDb() {
+  // If pool exists, check if it's connected before returning it
   if (pool) {
+    // Check if the connection is still valid
+    try {
+      await pool.query("SELECT 1"); // Test the connection with a simple query
+      return pool;
+    } catch {
+      // If the query fails, the connection is likely closed
+    }
     return pool;
   }
+  // If connection is closed, continue to create a new one
+
   try {
     pool = await sql.connect(config);
     console.log("Connected to SQL Server");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useUser } from "@/lib/hooks/useUser";
 import { ArrowLeft, ClipboardList, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,8 @@ interface QuizDetailPageProps {
 }
 
 export default function QuizDetailPage({ params }: QuizDetailPageProps) {
-  const quizId = parseInt(params.id, 10);
+  const { id } = use(params);
+  const quizId = parseInt(id, 10);
   const { user } = useUser();
   const router = useRouter();
   const [quiz, setQuiz] = useState<QuizWithQuestions | null>(null);

@@ -12,6 +12,7 @@ import {
   Book,
   Settings,
   LogOut,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,11 @@ const navItems: NavItem[] = [
     label: "Tasks",
     href: "/dashboard/tasks",
     icon: <CheckSquare className="w-5 h-5" />,
+  },
+  {
+    label: "Study Sessions",
+    href: "/dashboard/study-sessions",
+    icon: <Clock className="w-5 h-5" />,
   },
   {
     label: "Analytics",
