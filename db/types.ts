@@ -101,9 +101,32 @@ export interface Quiz {
 export interface Question {
   question_id: number;
   quiz_id: number;
-  question_type: "MCQ" | "Short Answer" | "Long Answer";
+  question_type: "MCQ"; // Only MCQ is allowed
   content: string;
-  correct_answer: string;
+  option_a: string;
+  option_b: string;
+  option_c: string;
+  option_d: string;
+  correct_answer: "a" | "b" | "c" | "d"; // Now represents the letter of the correct option
+}
+
+export interface QuizAttempt {
+  attempt_id: number;
+  quiz_id: number;
+  student_id: number;
+  start_time: Date;
+  end_time: Date | null;
+  score: number | null;
+  total_questions: number;
+  is_completed: number | boolean;
+}
+
+export interface QuizAnswer {
+  answer_id: number;
+  attempt_id: number;
+  question_id: number;
+  selected_option: "a" | "b" | "c" | "d";
+  is_correct: number | boolean;
 }
 
 export interface Group {

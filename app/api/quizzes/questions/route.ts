@@ -3,7 +3,7 @@ import { executeQuery } from "@/db/utils";
 
 /**
  * POST /api/quizzes/questions
- * Creates a new question for a quiz.
+ * Creates a new MCQ question for a quiz.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +13,10 @@ export async function POST(request: NextRequest) {
     if (
       !body.quiz_id ||
       !body.content ||
-      !body.question_type ||
+      !body.option_a ||
+      !body.option_b ||
+      !body.option_c ||
+      !body.option_d ||
       !body.correct_answer
     ) {
       return NextResponse.json(
@@ -21,22 +24,22 @@ export async function POST(request: NextRequest) {
           success: false,
           error: {
             message:
-              "Missing required fields: quiz_id, content, question_type, and correct_answer",
+              "Missing required fields: quiz_id, content, option_a, option_b, option_c, option_d, and correct_answer",
           },
         },
         { status: 400 }
       );
     }
 
-    // Validate question type
-    const validQuestionTypes = ["MCQ", "Short Answer", "Long Answer"];
-    if (!validQuestionTypes.includes(body.question_type)) {
+    // Validate correct answer format
+    const validOptions = ["a", "b", "c", "d"];
+    if (!validOptions.includes(body.correct_answer)) {
       return NextResponse.json(
         {
           success: false,
           error: {
             message:
-              "Invalid question_type. Must be one of: MCQ, Short Answer, Long Answer",
+              "Invalid correct_answer. Must be one of: a, b, c, d",
           },
         },
         { status: 400 }
@@ -46,19 +49,22 @@ export async function POST(request: NextRequest) {
     // Build query with consistent parameter naming
     const query = `
       INSERT INTO Questions (
-        quiz_id, question_type, content, correct_answer
+        quiz_id, question_type, content, option_a, option_b, option_c, option_d, correct_answer
       )
       OUTPUT INSERTED.*
       VALUES (
-        @quizId, @questionType, @content, @correctAnswer
+        @quizId, 'MCQ', @content, @optionA, @optionB, @optionC, @optionD, @correctAnswer
       );
     `;
 
     // Map request body to params with consistent camelCase naming
     const params = {
       quizId: body.quiz_id,
-      questionType: body.question_type,
       content: body.content,
+      optionA: body.option_a,
+      optionB: body.option_b,
+      optionC: body.option_c,
+      optionD: body.option_d,
       correctAnswer: body.correct_answer,
     };
 

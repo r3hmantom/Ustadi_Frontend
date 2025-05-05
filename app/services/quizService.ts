@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { Quiz, Question } from "@/db/types";
+import { Quiz, Question, QuizAttempt, QuizAnswer } from "@/db/types";
 
 // Types for the quiz service
 export interface QuizFormData {
@@ -8,14 +8,28 @@ export interface QuizFormData {
   is_public?: boolean;
 }
 
-export interface QuestionFormData {
+export interface McqQuestionFormData {
   content: string;
-  question_type: "MCQ" | "Short Answer" | "Long Answer";
-  correct_answer: string;
+  option_a: string;
+  option_b: string;
+  option_c: string;
+  option_d: string;
+  correct_answer: "a" | "b" | "c" | "d";
 }
 
 export interface QuizWithQuestions extends Quiz {
   questions: Question[];
+}
+
+export interface QuizAttemptData {
+  quiz_id: number;
+  student_id: number;
+  total_questions: number;
+}
+
+export interface QuizAnswerData {
+  question_id: number;
+  selected_option: "a" | "b" | "c" | "d";
 }
 
 // Helper for API requests
@@ -118,10 +132,10 @@ export const deleteQuiz = async (quizId: number): Promise<Quiz> => {
   }
 };
 
-// Question CRUD operations
+// Question operations
 export const addQuestion = async (
   quizId: number,
-  questionData: QuestionFormData
+  questionData: McqQuestionFormData
 ): Promise<Question> => {
   try {
     const response = await fetch("/api/quizzes/questions", {
@@ -129,7 +143,13 @@ export const addQuestion = async (
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         quiz_id: quizId,
-        ...questionData,
+        question_type: "MCQ",
+        content: questionData.content,
+        option_a: questionData.option_a,
+        option_b: questionData.option_b,
+        option_c: questionData.option_c,
+        option_d: questionData.option_d,
+        correct_answer: questionData.correct_answer,
       }),
     });
 
@@ -143,7 +163,7 @@ export const addQuestion = async (
 
 export const updateQuestion = async (
   questionId: number,
-  questionData: Partial<QuestionFormData>
+  questionData: Partial<McqQuestionFormData>
 ): Promise<Question> => {
   try {
     const response = await fetch(`/api/quizzes/questions/${questionId}`, {
@@ -170,6 +190,115 @@ export const deleteQuestion = async (questionId: number): Promise<Question> => {
   } catch (error) {
     console.error(`Failed to delete question ${questionId}:`, error);
     toast.error("Failed to delete question");
+    throw error;
+  }
+};
+
+// Quiz Attempt operations
+export const startQuizAttempt = async (
+  quizId: number,
+  studentId: number,
+  totalQuestions: number
+): Promise<QuizAttempt> => {
+  try {
+    const response = await fetch("/api/quizzes/attempts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        quiz_id: quizId,
+        student_id: studentId,
+        total_questions: totalQuestions,
+      }),
+    });
+
+    return handleResponse<QuizAttempt>(response);
+  } catch (error) {
+    console.error("Failed to start quiz attempt:", error);
+    toast.error("Failed to start quiz");
+    throw error;
+  }
+};
+
+export const submitAnswer = async (
+  attemptId: number,
+  questionId: number,
+  selectedOption: "a" | "b" | "c" | "d"
+): Promise<QuizAnswer> => {
+  try {
+    const response = await fetch("/api/quizzes/attempts/answer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        attempt_id: attemptId,
+        question_id: questionId,
+        selected_option: selectedOption,
+      }),
+    });
+
+    return handleResponse<QuizAnswer>(response);
+  } catch (error) {
+    console.error("Failed to submit answer:", error);
+    toast.error("Failed to submit answer");
+    throw error;
+  }
+};
+
+export const completeQuizAttempt = async (
+  attemptId: number
+): Promise<QuizAttempt> => {
+  try {
+    const response = await fetch(
+      `/api/quizzes/attempts/${attemptId}/complete`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    return handleResponse<QuizAttempt>(response);
+  } catch (error) {
+    console.error(`Failed to complete quiz attempt ${attemptId}:`, error);
+    toast.error("Failed to complete quiz");
+    throw error;
+  }
+};
+
+export const fetchQuizAttempts = async (
+  studentId: number,
+  quizId?: number
+): Promise<QuizAttempt[]> => {
+  try {
+    let url = `/api/quizzes/attempts?student_id=${studentId}`;
+    if (quizId) {
+      url += `&quiz_id=${quizId}`;
+    }
+
+    const response = await fetch(url);
+    return handleResponse<QuizAttempt[]>(response);
+  } catch (error) {
+    console.error("Failed to fetch quiz attempts:", error);
+    toast.error("Failed to load quiz attempts");
+    throw error;
+  }
+};
+
+export const fetchQuizAttemptDetails = async (
+  attemptId: number
+): Promise<{
+  attempt: QuizAttempt;
+  answers: QuizAnswer[];
+  questions: Question[];
+}> => {
+  try {
+    const response = await fetch(`/api/quizzes/attempts/${attemptId}`);
+    return handleResponse<{
+      attempt: QuizAttempt;
+      answers: QuizAnswer[];
+      questions: Question[];
+    }>(response);
+  } catch (error) {
+    console.error(`Failed to fetch quiz attempt ${attemptId}:`, error);
+    toast.error("Failed to load quiz attempt details");
     throw error;
   }
 };

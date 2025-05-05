@@ -2,10 +2,11 @@
 
 import { useState, useEffect, use } from "react";
 import { useUser } from "@/lib/hooks/useUser";
-import { ArrowLeft, ClipboardList, AlertTriangle } from "lucide-react";
+import { ArrowLeft, ClipboardList, AlertTriangle, PlayIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { fetchQuiz } from "@/app/services/quizService";
 import { QuizWithQuestions } from "@/app/services/quizService";
 import { Question } from "@/db/types";
@@ -64,9 +65,10 @@ export default function QuizDetailPage({ params }: QuizDetailPageProps) {
     return (
       <Card key={question.question_id} className="mb-4">
         <CardHeader className="pb-2">
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             <div className="font-medium">
-              Question {index + 1} ({question.question_type})
+              Question {index + 1}
+              <Badge variant="secondary" className="ml-2">MCQ</Badge>
             </div>
           </div>
         </CardHeader>
@@ -75,10 +77,33 @@ export default function QuizDetailPage({ params }: QuizDetailPageProps) {
             <div className="font-medium mb-1">Question:</div>
             <div className="text-muted-foreground">{question.content}</div>
           </div>
-          <div>
-            <div className="font-medium mb-1">Correct Answer:</div>
-            <div className="text-muted-foreground">
-              {question.correct_answer}
+          
+          <div className="space-y-2">
+            <div className="font-medium mb-1">Answer Options:</div>
+            <div className="grid gap-2">
+              {[
+                { key: "a", label: "A", value: question.option_a },
+                { key: "b", label: "B", value: question.option_b },
+                { key: "c", label: "C", value: question.option_c },
+                { key: "d", label: "D", value: question.option_d },
+              ].map((option) => (
+                <div 
+                  key={option.key} 
+                  className={`p-2 rounded-md ${
+                    option.key === question.correct_answer 
+                      ? "bg-green-100 dark:bg-green-900/20 border-l-4 border-green-500" 
+                      : "bg-muted/40"
+                  }`}
+                >
+                  <span className="font-medium mr-2">{option.label}.</span>
+                  {option.value}
+                  {option.key === question.correct_answer && (
+                    <span className="text-green-600 dark:text-green-400 text-sm ml-2">
+                      (Correct Answer)
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </CardContent>
@@ -120,6 +145,9 @@ export default function QuizDetailPage({ params }: QuizDetailPageProps) {
     );
   }
 
+  // Check if this quiz has questions and can be attempted
+  const canAttemptQuiz = quiz.questions.length > 0;
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -129,13 +157,23 @@ export default function QuizDetailPage({ params }: QuizDetailPageProps) {
           </Link>
         </Button>
 
-        {user && quiz.student_id === user.studentId && (
-          <Button size="sm" asChild>
-            <Link href={`/dashboard/quizzes/${quiz.quiz_id}/edit`}>
-              Edit Quiz
-            </Link>
-          </Button>
-        )}
+        <div className="space-x-2">
+          {user && quiz.student_id === user.studentId && (
+            <Button size="sm" variant="outline" asChild>
+              <Link href={`/dashboard/quizzes/${quiz.quiz_id}/edit`}>
+                Edit Quiz
+              </Link>
+            </Button>
+          )}
+          
+          {user && canAttemptQuiz && (
+            <Button size="sm" asChild>
+              <Link href={`/dashboard/quizzes/${quiz.quiz_id}/attempt`}>
+                <PlayIcon className="h-4 w-4 mr-2" /> Attempt Quiz
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="mb-8">
@@ -147,8 +185,28 @@ export default function QuizDetailPage({ params }: QuizDetailPageProps) {
           <span>Created: {new Date(quiz.created_at).toLocaleDateString()}</span>
           <span className="mx-2">•</span>
           <span>{quiz.is_public ? "Public" : "Private"}</span>
+          <span className="mx-2">•</span>
+          <span>{quiz.questions.length} question{quiz.questions.length !== 1 ? 's' : ''}</span>
         </div>
       </div>
+
+      {user && canAttemptQuiz && (
+        <Card className="mb-6 bg-primary/5">
+          <CardContent className="flex items-center justify-between pt-6">
+            <div>
+              <h3 className="font-medium text-lg">Ready to test your knowledge?</h3>
+              <p className="text-muted-foreground">
+                This quiz has {quiz.questions.length} multiple choice question{quiz.questions.length !== 1 ? 's' : ''}.
+              </p>
+            </div>
+            <Button asChild>
+              <Link href={`/dashboard/quizzes/${quiz.quiz_id}/attempt`}>
+                <PlayIcon className="h-4 w-4 mr-2" /> Start Quiz
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Separator className="my-6" />
 
