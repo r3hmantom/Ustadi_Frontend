@@ -14,7 +14,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: { message: "Missing required fields: attempt_id, question_id, and selected_option" },
+          error: {
+            message:
+              "Missing required fields: attempt_id, question_id, and selected_option",
+          },
         },
         { status: 400 }
       );
@@ -26,7 +29,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: { message: "Invalid selected_option. Must be one of: a, b, c, d" },
+          error: {
+            message: "Invalid selected_option. Must be one of: a, b, c, d",
+          },
         },
         { status: 400 }
       );
@@ -45,7 +50,11 @@ export async function POST(request: NextRequest) {
 
     const questionResult = await executeQuery(getQuestionQuery, questionParams);
 
-    if (!questionResult.success || !questionResult.data || questionResult.data.length === 0) {
+    if (
+      !questionResult.success ||
+      !questionResult.data ||
+      questionResult.data.length === 0
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -99,7 +108,8 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error("Error processing POST /api/quizzes/attempts/answer:", error);
-    const message = error instanceof Error ? error.message : "An unexpected error occurred";
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred";
     return NextResponse.json(
       { success: false, error: { message } },
       { status: 500 }

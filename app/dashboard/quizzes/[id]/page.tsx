@@ -2,7 +2,12 @@
 
 import { useState, useEffect, use } from "react";
 import { useUser } from "@/lib/hooks/useUser";
-import { ArrowLeft, ClipboardList, AlertTriangle, PlayIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  ClipboardList,
+  AlertTriangle,
+  PlayIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -68,7 +73,9 @@ export default function QuizDetailPage({ params }: QuizDetailPageProps) {
           <div className="flex justify-between items-center">
             <div className="font-medium">
               Question {index + 1}
-              <Badge variant="secondary" className="ml-2">MCQ</Badge>
+              <Badge variant="secondary" className="ml-2">
+                MCQ
+              </Badge>
             </div>
           </div>
         </CardHeader>
@@ -77,7 +84,7 @@ export default function QuizDetailPage({ params }: QuizDetailPageProps) {
             <div className="font-medium mb-1">Question:</div>
             <div className="text-muted-foreground">{question.content}</div>
           </div>
-          
+
           <div className="space-y-2">
             <div className="font-medium mb-1">Answer Options:</div>
             <div className="grid gap-2">
@@ -87,11 +94,11 @@ export default function QuizDetailPage({ params }: QuizDetailPageProps) {
                 { key: "c", label: "C", value: question.option_c },
                 { key: "d", label: "D", value: question.option_d },
               ].map((option) => (
-                <div 
-                  key={option.key} 
+                <div
+                  key={option.key}
                   className={`p-2 rounded-md ${
-                    option.key === question.correct_answer 
-                      ? "bg-green-100 dark:bg-green-900/20 border-l-4 border-green-500" 
+                    option.key === question.correct_answer
+                      ? "bg-green-100 dark:bg-green-900/20 border-l-4 border-green-500"
                       : "bg-muted/40"
                   }`}
                 >
@@ -165,7 +172,7 @@ export default function QuizDetailPage({ params }: QuizDetailPageProps) {
               </Link>
             </Button>
           )}
-          
+
           {user && canAttemptQuiz && (
             <Button size="sm" asChild>
               <Link href={`/dashboard/quizzes/${quiz.quiz_id}/attempt`}>
@@ -186,7 +193,10 @@ export default function QuizDetailPage({ params }: QuizDetailPageProps) {
           <span className="mx-2">•</span>
           <span>{quiz.is_public ? "Public" : "Private"}</span>
           <span className="mx-2">•</span>
-          <span>{quiz.questions.length} question{quiz.questions.length !== 1 ? 's' : ''}</span>
+          <span>
+            {quiz.questions.length} question
+            {quiz.questions.length !== 1 ? "s" : ""}
+          </span>
         </div>
       </div>
 
@@ -194,9 +204,12 @@ export default function QuizDetailPage({ params }: QuizDetailPageProps) {
         <Card className="mb-6 bg-primary/5">
           <CardContent className="flex items-center justify-between pt-6">
             <div>
-              <h3 className="font-medium text-lg">Ready to test your knowledge?</h3>
+              <h3 className="font-medium text-lg">
+                Ready to test your knowledge?
+              </h3>
               <p className="text-muted-foreground">
-                This quiz has {quiz.questions.length} multiple choice question{quiz.questions.length !== 1 ? 's' : ''}.
+                This quiz has {quiz.questions.length} multiple choice question
+                {quiz.questions.length !== 1 ? "s" : ""}.
               </p>
             </div>
             <Button asChild>

@@ -3,15 +3,21 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useUser } from "@/lib/hooks/useUser";
-import { 
-  fetchQuiz, 
-  startQuizAttempt, 
-  submitAnswer, 
-  completeQuizAttempt 
+import {
+  fetchQuiz,
+  startQuizAttempt,
+  submitAnswer,
+  completeQuizAttempt,
 } from "@/app/services/quizService";
 import { Question, QuizAnswer, QuizAttempt } from "@/db/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import AttemptQuestion from "../../attempt-question";
@@ -24,7 +30,7 @@ export default function QuizAttemptPage() {
   const params = useParams();
   const quizId = parseInt(params.id as string, 10);
   const { user, isLoading: isUserLoading } = useUser();
-  
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [quiz, setQuiz] = useState<any>(null);
@@ -44,13 +50,13 @@ export default function QuizAttemptPage() {
       try {
         const quizData = await fetchQuiz(quizId);
         setQuiz(quizData);
-        
+
         if (quizData.questions.length === 0) {
           toast.error("This quiz has no questions");
           router.push(`/dashboard/quizzes/${quizId}`);
           return;
         }
-        
+
         setQuestions(quizData.questions);
         setLoading(false);
       } catch (error) {
@@ -66,11 +72,11 @@ export default function QuizAttemptPage() {
   useEffect(() => {
     const initializeAttempt = async () => {
       if (!user?.studentId || !quiz) return;
-      
+
       try {
         const newAttempt = await startQuizAttempt(
-          quizId, 
-          user.studentId, 
+          quizId,
+          user.studentId,
           questions.length
         );
         setAttempt(newAttempt);
@@ -87,15 +93,19 @@ export default function QuizAttemptPage() {
 
   const handleAnswer = async (selectedOption: "a" | "b" | "c" | "d") => {
     if (!attempt) return;
-    
+
     const currentQuestion = questions[currentQuestionIndex];
-    
+
     try {
-      await submitAnswer(attempt.attempt_id, currentQuestion.question_id, selectedOption);
-      
-      setAnswers(prev => ({
+      await submitAnswer(
+        attempt.attempt_id,
+        currentQuestion.question_id,
+        selectedOption
+      );
+
+      setAnswers((prev) => ({
         ...prev,
-        [currentQuestion.question_id]: selectedOption
+        [currentQuestion.question_id]: selectedOption,
       }));
     } catch (error) {
       console.error("Failed to submit answer:", error);
@@ -105,19 +115,19 @@ export default function QuizAttemptPage() {
 
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
+      setCurrentQuestionIndex((prev) => prev + 1);
     }
   };
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
+      setCurrentQuestionIndex((prev) => prev - 1);
     }
   };
 
   const handleComplete = async () => {
     if (!attempt) return;
-    
+
     setSubmitting(true);
     try {
       const completedAttempt = await completeQuizAttempt(attempt.attempt_id);
@@ -159,7 +169,9 @@ export default function QuizAttemptPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">{quiz.title}</h1>
-          {quiz.description && <p className="text-muted-foreground mt-1">{quiz.description}</p>}
+          {quiz.description && (
+            <p className="text-muted-foreground mt-1">{quiz.description}</p>
+          )}
         </div>
         <Link href={`/dashboard/quizzes/${quizId}`} passHref>
           <Button variant="ghost">
@@ -169,7 +181,7 @@ export default function QuizAttemptPage() {
       </div>
 
       <Separator />
-      
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="md:col-span-3">
           {currentQuestion && (
@@ -187,7 +199,7 @@ export default function QuizAttemptPage() {
             />
           )}
         </div>
-        
+
         <div className="space-y-6">
           <Card>
             <CardHeader className="pb-3">
@@ -206,35 +218,42 @@ export default function QuizAttemptPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button 
-                className="w-full" 
+              <Button
+                className="w-full"
                 onClick={handleComplete}
                 disabled={submitting || !allQuestionsAnswered}
               >
                 {submitting ? (
-                  <><Loader2Icon className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
+                  <>
+                    <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />{" "}
+                    Submitting...
+                  </>
                 ) : (
-                  <><CheckCircleIcon className="mr-2 h-4 w-4" /> Submit Quiz</>
+                  <>
+                    <CheckCircleIcon className="mr-2 h-4 w-4" /> Submit Quiz
+                  </>
                 )}
               </Button>
             </CardFooter>
           </Card>
-          
+
           {!allQuestionsAnswered && (
             <p className="text-sm text-muted-foreground">
               Answer all questions to submit the quiz.
             </p>
           )}
-          
+
           <div className="grid grid-cols-5 gap-2">
             {questions.map((q, index) => {
               const isAnswered = !!answers[q.question_id];
               const isCurrent = index === currentQuestionIndex;
-              
+
               return (
                 <Button
                   key={q.question_id}
-                  variant={isCurrent ? "default" : isAnswered ? "secondary" : "outline"}
+                  variant={
+                    isCurrent ? "default" : isAnswered ? "secondary" : "outline"
+                  }
                   className="h-10 w-10 p-0"
                   onClick={() => setCurrentQuestionIndex(index)}
                   disabled={submitting}

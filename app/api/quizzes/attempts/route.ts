@@ -61,11 +61,18 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Required field validation
-    if (!body.quiz_id || !body.student_id || body.total_questions === undefined) {
+    if (
+      !body.quiz_id ||
+      !body.student_id ||
+      body.total_questions === undefined
+    ) {
       return NextResponse.json(
         {
           success: false,
-          error: { message: "Missing required fields: quiz_id, student_id, and total_questions" },
+          error: {
+            message:
+              "Missing required fields: quiz_id, student_id, and total_questions",
+          },
         },
         { status: 400 }
       );

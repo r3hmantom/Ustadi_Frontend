@@ -9,7 +9,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { ArrowLeftIcon, CheckCircle2Icon, XCircleIcon, Loader2Icon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  CheckCircle2Icon,
+  XCircleIcon,
+  Loader2Icon,
+} from "lucide-react";
 import Link from "next/link";
 
 export default function QuizResultsPage() {
@@ -18,7 +23,7 @@ export default function QuizResultsPage() {
   const quizId = parseInt(params.id as string, 10);
   const attemptId = parseInt(params.attemptId as string, 10);
   const { user } = useUser();
-  
+
   const [loading, setLoading] = useState(true);
   const [attemptData, setAttemptData] = useState<any>(null);
 
@@ -63,7 +68,11 @@ export default function QuizResultsPage() {
     );
   }
 
-  if (!attemptData?.attempt || !attemptData?.questions || !attemptData?.answers) {
+  if (
+    !attemptData?.attempt ||
+    !attemptData?.questions ||
+    !attemptData?.answers
+  ) {
     return (
       <Alert variant="destructive" className="max-w-lg mx-auto my-8">
         <AlertDescription>
@@ -77,7 +86,7 @@ export default function QuizResultsPage() {
   const score = attempt.score || 0;
   const totalQuestions = attempt.total_questions;
   const percentage = Math.round((score / totalQuestions) * 100);
-  
+
   // Map question ID to answer for easier lookup
   const answerMap = answers.reduce((acc: Record<number, any>, answer: any) => {
     acc[answer.question_id] = answer;
@@ -106,7 +115,7 @@ export default function QuizResultsPage() {
       </div>
 
       <Separator />
-      
+
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-3">
           <CardHeader>
@@ -120,8 +129,8 @@ export default function QuizResultsPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="h-4 w-full bg-secondary rounded-full overflow-hidden">
-                <div 
-                  className={`h-full ${percentage >= 70 ? 'bg-green-500' : percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                <div
+                  className={`h-full ${percentage >= 70 ? "bg-green-500" : percentage >= 50 ? "bg-yellow-500" : "bg-red-500"}`}
                   style={{ width: `${percentage}%` }}
                 />
               </div>
@@ -131,16 +140,21 @@ export default function QuizResultsPage() {
 
         <div className="space-y-6 md:col-span-3">
           <h2 className="text-xl font-semibold mt-4">Question Review</h2>
-          
+
           {questions.map((question: any, index: number) => {
             const answer = answerMap[question.question_id];
             const isCorrect = answer?.is_correct;
-            
+
             return (
-              <Card key={question.question_id} className={`border-l-4 ${isCorrect ? 'border-l-green-500' : 'border-l-red-500'}`}>
+              <Card
+                key={question.question_id}
+                className={`border-l-4 ${isCorrect ? "border-l-green-500" : "border-l-red-500"}`}
+              >
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg">Question {index + 1}</CardTitle>
+                    <CardTitle className="text-lg">
+                      Question {index + 1}
+                    </CardTitle>
                     {isCorrect ? (
                       <span className="flex items-center text-green-500">
                         <CheckCircle2Icon className="h-5 w-5 mr-1" /> Correct
@@ -154,7 +168,7 @@ export default function QuizResultsPage() {
                 </CardHeader>
                 <CardContent className="pb-6 space-y-4">
                   <p className="font-medium">{question.content}</p>
-                  
+
                   <div className="space-y-2">
                     {[
                       { key: "a", label: "A", value: question.option_a },
@@ -162,19 +176,26 @@ export default function QuizResultsPage() {
                       { key: "c", label: "C", value: question.option_c },
                       { key: "d", label: "D", value: question.option_d },
                     ].map((option) => (
-                      <div key={option.key} className={`p-3 rounded-md flex items-center gap-2 ${
-                        option.key === question.correct_answer ? 'bg-green-100 dark:bg-green-900/20' : 
-                        option.key === answer?.selected_option && option.key !== question.correct_answer ? 'bg-red-100 dark:bg-red-900/20' : 
-                        'bg-muted/40'
-                      }`}>
+                      <div
+                        key={option.key}
+                        className={`p-3 rounded-md flex items-center gap-2 ${
+                          option.key === question.correct_answer
+                            ? "bg-green-100 dark:bg-green-900/20"
+                            : option.key === answer?.selected_option &&
+                                option.key !== question.correct_answer
+                              ? "bg-red-100 dark:bg-red-900/20"
+                              : "bg-muted/40"
+                        }`}
+                      >
                         <span className="font-medium">{option.label}.</span>
                         <span className="flex-1">{option.value}</span>
                         {option.key === question.correct_answer && (
                           <CheckCircle2Icon className="h-5 w-5 text-green-500" />
                         )}
-                        {option.key === answer?.selected_option && option.key !== question.correct_answer && (
-                          <XCircleIcon className="h-5 w-5 text-red-500" />
-                        )}
+                        {option.key === answer?.selected_option &&
+                          option.key !== question.correct_answer && (
+                            <XCircleIcon className="h-5 w-5 text-red-500" />
+                          )}
                       </div>
                     ))}
                   </div>
@@ -182,14 +203,14 @@ export default function QuizResultsPage() {
               </Card>
             );
           })}
-          
+
           <div className="flex justify-between pt-6">
             <Link href={`/dashboard/quizzes/${quizId}`} passHref>
               <Button variant="outline">
                 <ArrowLeftIcon className="mr-2 h-4 w-4" /> Back to Quiz
               </Button>
             </Link>
-            
+
             <Link href={`/dashboard/quizzes/${quizId}/attempt`} passHref>
               <Button>Try Again</Button>
             </Link>

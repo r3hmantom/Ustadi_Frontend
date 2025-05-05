@@ -44,7 +44,7 @@ export default function McqQuestionForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await onSubmit(formData);
-    
+
     // Clear the form if no initialData was provided (for adding new questions)
     if (!initialData.content) {
       setFormData({
@@ -89,7 +89,11 @@ export default function McqQuestionForm({
                     id={`option_${option}`}
                     name={`option_${option}`}
                     placeholder={`Option ${option.toUpperCase()}`}
-                    value={formData[`option_${option}` as keyof McqQuestionFormData] as string}
+                    value={
+                      formData[
+                        `option_${option}` as keyof McqQuestionFormData
+                      ] as string
+                    }
                     onChange={handleChange}
                     className="flex-1"
                     required
@@ -105,7 +109,11 @@ export default function McqQuestionForm({
       </div>
 
       <Button type="submit" disabled={isLoading}>
-        {isLoading ? "Saving..." : initialData.content ? "Update Question" : "Add Question"}
+        {isLoading
+          ? "Saving..."
+          : initialData.content
+            ? "Update Question"
+            : "Add Question"}
       </Button>
     </form>
   );

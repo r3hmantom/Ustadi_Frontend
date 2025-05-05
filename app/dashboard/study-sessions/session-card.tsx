@@ -54,13 +54,13 @@ export function SessionCard({ session, onDelete, onUpdate }: SessionCardProps) {
   // Handle completing a session
   const handleCompleteSession = async () => {
     if (!confirm("Mark this session as complete?")) return;
-    
+
     try {
       const now = new Date();
       const updatedSession = await updateStudySession(session.session_id, {
         end_time: now.toISOString(),
       });
-      
+
       if (onUpdate) {
         onUpdate(updatedSession);
       }
@@ -115,7 +115,12 @@ export function SessionCard({ session, onDelete, onUpdate }: SessionCardProps) {
             Complete
           </Button>
         )}
-        <Button variant="ghost" size="sm" onClick={onDelete} className={isSessionCompleted ? "ml-auto" : ""}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onDelete}
+          className={isSessionCompleted ? "ml-auto" : ""}
+        >
           <Trash2 className="h-4 w-4" />
         </Button>
       </CardFooter>

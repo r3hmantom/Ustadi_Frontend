@@ -4,7 +4,7 @@ import { executeQuery } from "@/db/utils";
 interface RouteParams {
   params: {
     id: string;
-  }
+  };
 }
 
 /**
@@ -28,10 +28,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // First, check if the attempt exists
     const checkQuery = `SELECT * FROM QuizAttempts WHERE attempt_id = @attemptId`;
     const checkParams = { attemptId };
-    
+
     const checkResult = await executeQuery(checkQuery, checkParams);
-    
-    if (!checkResult.success || !checkResult.data || checkResult.data.length === 0) {
+
+    if (
+      !checkResult.success ||
+      !checkResult.data ||
+      checkResult.data.length === 0
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -40,16 +44,16 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         { status: 404 }
       );
     }
-    
+
     // Calculate the score based on correct answers
     const scoreQuery = `
       SELECT COUNT(*) AS correct_count
       FROM QuizAnswers
       WHERE attempt_id = @attemptId AND is_correct = 1
     `;
-    
+
     const scoreResult = await executeQuery(scoreQuery, { attemptId });
-    
+
     if (!scoreResult.success || !scoreResult.data) {
       return NextResponse.json(
         {
@@ -59,10 +63,10 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         { status: 500 }
       );
     }
-    
+
     const correctCount = scoreResult.data[0]?.correct_count || 0;
     const totalQuestions = checkResult.data[0].total_questions;
-    
+
     // Update the attempt to mark it as completed with the score
     const updateQuery = `
       UPDATE QuizAttempts
@@ -73,33 +77,37 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       OUTPUT INSERTED.*
       WHERE attempt_id = @attemptId
     `;
-    
+
     const updateParams = {
       attemptId,
-      score: correctCount
+      score: correctCount,
     };
-    
+
     const result = await executeQuery(updateQuery, updateParams);
-    
+
     if (result.success && result.data && result.data.length > 0) {
       return NextResponse.json({
         success: true,
-        data: result.data[0]
+        data: result.data[0],
       });
     } else {
       const errorMessage = result.success
         ? "Quiz completion succeeded but no data returned"
         : result.error?.message || "Unknown database error";
-        
+
       return NextResponse.json(
         { success: false, error: { message: errorMessage } },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error(`Error processing PATCH /api/quizzes/attempts/${params.id}/complete:`, error);
-    const message = error instanceof Error ? error.message : "An unexpected error occurred";
-    
+    console.error(
+      `Error processing PATCH /api/quizzes/attempts/${params.id}/complete:`,
+      error
+    );
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred";
+
     return NextResponse.json(
       { success: false, error: { message } },
       { status: 500 }

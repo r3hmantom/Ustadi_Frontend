@@ -34,7 +34,9 @@ export default function AttemptQuestion({
   const [selected, setSelected] = useState<"a" | "b" | "c" | "d" | undefined>(
     selectedOption as "a" | "b" | "c" | "d" | undefined
   );
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle"
+  );
 
   useEffect(() => {
     setSelected(selectedOption as "a" | "b" | "c" | "d" | undefined);
@@ -44,11 +46,11 @@ export default function AttemptQuestion({
     const option = value as "a" | "b" | "c" | "d";
     setSelected(option);
     setSaveStatus("saving");
-    
+
     try {
       await onAnswer(option);
       setSaveStatus("saved");
-      
+
       // Reset the saved status after a delay
       setTimeout(() => {
         setSaveStatus("idle");

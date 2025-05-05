@@ -38,8 +38,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: {
-            message:
-              "Invalid correct_answer. Must be one of: a, b, c, d",
+            message: "Invalid correct_answer. Must be one of: a, b, c, d",
           },
         },
         { status: 400 }
