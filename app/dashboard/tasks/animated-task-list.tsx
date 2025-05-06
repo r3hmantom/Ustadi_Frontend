@@ -108,6 +108,22 @@ export const AnimatedTaskList = ({
     return Object.values(taskState).some((isProcessing) => isProcessing);
   };
 
+  // Handle button clicks with stopPropagation to prevent opening task detail view
+  const handleEditClick = (e: React.MouseEvent, task: Task) => {
+    e.stopPropagation();
+    onEdit(task);
+  };
+
+  const handleCompleteClick = (e: React.MouseEvent, taskId: number) => {
+    e.stopPropagation();
+    onComplete?.(taskId);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, taskId: number) => {
+    e.stopPropagation();
+    onDelete?.(taskId);
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
@@ -250,7 +266,7 @@ export const AnimatedTaskList = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onEdit(task)}
+                    onClick={(e) => handleEditClick(e, task)}
                     disabled={
                       isTaskProcessing(task.task_id, "editing") || isCompleted
                     }
@@ -263,7 +279,7 @@ export const AnimatedTaskList = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onComplete(task.task_id)}
+                      onClick={(e) => handleCompleteClick(e, task.task_id)}
                       disabled={isTaskProcessing(task.task_id, "completing")}
                     >
                       {isTaskProcessing(task.task_id, "completing") ? (
@@ -279,7 +295,7 @@ export const AnimatedTaskList = ({
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => onDelete(task.task_id)}
+                      onClick={(e) => handleDeleteClick(e, task.task_id)}
                       disabled={isTaskProcessing(task.task_id, "deleting")}
                     >
                       {isTaskProcessing(task.task_id, "deleting") ? (
