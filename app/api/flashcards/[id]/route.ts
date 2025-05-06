@@ -140,7 +140,8 @@ export async function PATCH(
 
     // Build the update SQL dynamically based on provided fields
     const updates: string[] = [];
-    const updateParams: Record<string, any> = {
+    const updateParams: Record<string, string | number | Date> = {
+      // Changed 'any' to more specific types
       flashcardId,
       studentId: session.user.studentId,
     };

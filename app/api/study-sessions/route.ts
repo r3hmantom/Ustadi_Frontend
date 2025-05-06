@@ -185,7 +185,7 @@ export async function POST(
           );
         }
       }
-    } catch (e) {
+    } catch {
       return NextResponse.json<ErrorResponse>(
         {
           success: false,
@@ -245,10 +245,12 @@ export async function POST(
     });
   } catch (error) {
     console.error("Error creating study session:", error);
+    const message =
+      error instanceof Error ? error.message : "Failed to create study session";
     return NextResponse.json<ErrorResponse>(
       {
         success: false,
-        error: { message: "Failed to create study session" },
+        error: { message },
       },
       { status: 500 }
     );

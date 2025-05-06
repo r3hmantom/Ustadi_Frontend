@@ -25,7 +25,9 @@ export default function QuizResultsPage() {
   const { user } = useUser();
 
   const [loading, setLoading] = useState(true);
-  const [attemptData, setAttemptData] = useState<any>(null);
+  const [attemptData, setAttemptData] = useState<QuizAttemptDetails | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchAttemptData = async () => {
@@ -88,10 +90,13 @@ export default function QuizResultsPage() {
   const percentage = Math.round((score / totalQuestions) * 100);
 
   // Map question ID to answer for easier lookup
-  const answerMap = answers.reduce((acc: Record<number, any>, answer: any) => {
-    acc[answer.question_id] = answer;
-    return acc;
-  }, {});
+  const answerMap = answers.reduce(
+    (acc: Record<number, QuizAnswer>, answer: QuizAnswer) => {
+      acc[answer.question_id] = answer;
+      return acc;
+    },
+    {}
+  );
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -141,7 +146,7 @@ export default function QuizResultsPage() {
         <div className="space-y-6 md:col-span-3">
           <h2 className="text-xl font-semibold mt-4">Question Review</h2>
 
-          {questions.map((question: any, index: number) => {
+          {questions.map((question: Question, index: number) => {
             const answer = answerMap[question.question_id];
             const isCorrect = answer?.is_correct;
 

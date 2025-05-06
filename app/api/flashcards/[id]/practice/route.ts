@@ -85,7 +85,8 @@ export async function POST(
 
     // Implement the SuperMemo SM-2 algorithm for spaced repetition
     const { quality } = payload;
-    let { interval_days: intervalDays, ease_factor: easeFactor } = flashcard;
+    const intervalDays = flashcard.interval_days;
+    let { ease_factor: easeFactor } = flashcard;
 
     // Calculate new ease factor
     easeFactor = Math.max(

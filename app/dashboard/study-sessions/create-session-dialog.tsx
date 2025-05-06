@@ -63,7 +63,7 @@ export function CreateSessionDialog({
         .catch((err) => console.error("Failed to fetch tasks:", err))
         .finally(() => setTasksLoading(false));
     }
-  }, [open, user?.studentId]);
+  }, [open, user?.studentId, newSession.task_id]); // Added newSession.task_id to dependency array
 
   const handleCreateSession = () => {
     onCreateSession(newSession);

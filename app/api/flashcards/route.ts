@@ -65,6 +65,7 @@ export async function GET(
 
 // POST handler to create a new flashcard
 export async function POST(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<Flashcard>>> {
   try {

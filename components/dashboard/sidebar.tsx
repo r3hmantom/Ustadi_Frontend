@@ -7,7 +7,7 @@ import {
   LayoutDashboard,
   CheckSquare,
   BarChart3,
-  Users,
+  // Users2, // Removed unused import
   Trophy,
   Book,
   Settings,

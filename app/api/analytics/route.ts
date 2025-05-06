@@ -63,7 +63,6 @@ export async function GET(request: NextRequest) {
 
     // Convert dates to ISO string format
     const startDateStr = startDate.toISOString();
-    const nowStr = now.toISOString();
 
     // Query for activity summary
     const activitySummaryQuery = `

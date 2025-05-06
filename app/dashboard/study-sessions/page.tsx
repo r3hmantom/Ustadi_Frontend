@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react"; // Added useCallback
 import {
   Card,
   CardDescription,
@@ -13,7 +12,6 @@ import {
   fetchStudySessions,
   createStudySession,
   deleteStudySession,
-  updateStudySession,
 } from "@/app/services/studySessionService";
 import { useUser } from "@/lib/hooks/useUser";
 import { CreateSessionDialog } from "./create-session-dialog";
@@ -21,14 +19,14 @@ import { SessionsList } from "./sessions-list";
 
 export default function StudySessions() {
   const { user } = useUser();
-  const router = useRouter();
 
   const [studySessions, setStudySessions] = useState<StudySession[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Function to load study sessions
-  const loadStudySessions = async () => {
+  const loadStudySessions = useCallback(async () => {
+    // Wrapped in useCallback
     try {
       setLoading(true);
       setError(null);
@@ -45,14 +43,14 @@ export default function StudySessions() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.studentId]); // Added dependency for useCallback
 
   // Load study sessions when user data is available
   useEffect(() => {
     if (user?.studentId) {
       loadStudySessions();
     }
-  }, [user?.studentId]);
+  }, [user?.studentId, loadStudySessions]); // Added loadStudySessions to dependency array
 
   // Handle new session creation
   const handleCreateSession = async (newSession: {
@@ -145,8 +143,8 @@ export default function StudySessions() {
           <CardHeader>
             <CardTitle>No Study Sessions</CardTitle>
             <CardDescription>
-              You don't have any study sessions yet. Click "New Session" to get
-              started.
+              You don&apos;t have any study sessions yet. Click &quot;New
+              Session&quot; to get started.
             </CardDescription>
           </CardHeader>
         </Card>

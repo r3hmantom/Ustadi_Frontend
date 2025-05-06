@@ -11,7 +11,7 @@ import {
   QuizFormData,
   McqQuestionFormData,
 } from "@/app/services/quizService";
-import { Question } from "@/db/types";
+import { Question, Quiz } from "@/db/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,7 +45,7 @@ export default function EditQuizPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [addingQuestion, setAddingQuestion] = useState(false);
-  const [quiz, setQuiz] = useState<any>(null);
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
 
   const [quizForm, setQuizForm] = useState<QuizFormData>({

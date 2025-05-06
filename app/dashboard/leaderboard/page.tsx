@@ -146,7 +146,6 @@ const LeaderboardTable = ({
 
   const getPeriodLabel = (entry: LeaderboardEntry) => {
     const startDate = new Date(entry.start_date);
-    const endDate = new Date(entry.end_date);
 
     if (entry.period_type === "Weekly") {
       return `Week of ${formatDate(startDate)}`;

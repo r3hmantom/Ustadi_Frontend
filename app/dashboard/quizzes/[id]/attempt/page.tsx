@@ -9,7 +9,7 @@ import {
   submitAnswer,
   completeQuizAttempt,
 } from "@/app/services/quizService";
-import { Question, QuizAnswer, QuizAttempt } from "@/db/types";
+import { Question, /* QuizAnswer, */ QuizAttempt } from "@/db/types"; // Removed unused import QuizAnswer
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -33,7 +33,7 @@ export default function QuizAttemptPage() {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [quiz, setQuiz] = useState<any>(null);
+  const [quiz, setQuiz] = useState<Quiz | null>(null); // Changed 'any' to 'Quiz | null'
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -130,7 +130,7 @@ export default function QuizAttemptPage() {
 
     setSubmitting(true);
     try {
-      const completedAttempt = await completeQuizAttempt(attempt.attempt_id);
+      await completeQuizAttempt(attempt.attempt_id); // Removed unused variable
       router.push(`/dashboard/quizzes/${quizId}/results/${attempt.attempt_id}`);
     } catch (error) {
       console.error("Failed to complete quiz attempt:", error);

@@ -1,5 +1,4 @@
 import { UserProfile } from "@/db/types";
-import { toast } from "sonner";
 
 export interface ProfileUpdateData {
   email?: string;

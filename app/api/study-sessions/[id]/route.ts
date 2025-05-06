@@ -3,7 +3,6 @@ import { ApiResponse, SuccessResponse, ErrorResponse } from "@/db/utils";
 import { StudySession } from "@/db/types";
 import { getSession } from "../../auth/utils";
 import { executeQuery } from "@/db/utils";
-import { awardStudySessionPoints } from "@/app/services/leaderboardService";
 
 /**
  * GET /api/study-sessions/[id]
@@ -181,9 +180,6 @@ export async function PATCH(
       );
     }
 
-    // Check if this is a completion request (adding end_time to a session that doesn't have one)
-    const isSessionCompletion = body.end_time && !existingSession.end_time;
-
     // Enforce session type enum values if provided
     if (body.session_type) {
       const validSessionTypes = ["Pomodoro", "Revision", "Group Study"];
@@ -213,23 +209,6 @@ export async function PATCH(
         );
       }
     }
-
-    // Update the session with the provided data
-    const updatedSession: StudySession = {
-      ...existingSession,
-      // Parse dates if they are provided
-      start_time: body.start_time
-        ? new Date(body.start_time)
-        : existingSession.start_time,
-      end_time: body.end_time
-        ? new Date(body.end_time)
-        : existingSession.end_time,
-      // Always ensure task_id is set
-      task_id:
-        body.task_id !== undefined
-          ? parseInt(body.task_id)
-          : existingSession.task_id,
-    };
 
     // Build the update query dynamically based on the provided fields
     const updateFields = [];
@@ -281,7 +260,7 @@ export async function PATCH(
       queryParams
     );
 
-    if (!updateResult.success) {
+    if (!updateResult.success || updateResult.data.length === 0) {
       return NextResponse.json<ErrorResponse>(
         {
           success: false,
@@ -291,38 +270,9 @@ export async function PATCH(
       );
     }
 
-    if (updateResult.data.length === 0) {
-      return NextResponse.json<ErrorResponse>(
-        {
-          success: false,
-          error: { message: "Study session not updated" },
-        },
-        { status: 404 }
-      );
-    }
-
-    const updatedSessionData = updateResult.data[0];
-
-    // Award points if the session is being completed
-    if (isSessionCompletion) {
-      try {
-        // Award points asynchronously to avoid blocking the response
-        awardStudySessionPoints(
-          updatedSessionData.student_id,
-          updatedSessionData.session_id,
-          updatedSessionData.session_type
-        ).catch((err) =>
-          console.error("Error awarding study session points:", err)
-        );
-      } catch (err) {
-        // Log error but don't fail the request
-        console.error("Error trying to award study session points:", err);
-      }
-    }
-
     return NextResponse.json<SuccessResponse<StudySession>>({
       success: true,
-      data: updatedSessionData,
+      data: updateResult.data[0], // Return the updated session directly
     });
   } catch (error) {
     console.error(`Error updating study session ${params.id}:`, error);
