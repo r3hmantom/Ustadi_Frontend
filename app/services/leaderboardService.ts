@@ -109,6 +109,9 @@ export const POINTS = {
   QUIZ_PERFECT_SCORE: 10, // Additional points for perfect score
   STUDY_SESSION_COMPLETED: 5,
   REVISION_COMPLETED: 8,
+  FLASHCARD_PRACTICE_LOW: 2, // Low-quality recall (quality 1-2)
+  FLASHCARD_PRACTICE_MEDIUM: 5, // Medium-quality recall (quality 3)
+  FLASHCARD_PRACTICE_HIGH: 10, // High-quality recall (quality 4-5)
 };
 
 /**
@@ -173,6 +176,34 @@ export async function awardStudySessionPoints(
     studentId,
     points,
     `${sessionType} Session Completed`,
+    undefined,
+    undefined
+  );
+}
+
+/**
+ * Updates leaderboard points when a flashcard is practiced
+ */
+export async function awardFlashcardPracticePoints(
+  studentId: number,
+  quality: number
+): Promise<void> {
+  // Award points based on quality of recall
+  let points = POINTS.FLASHCARD_PRACTICE_LOW; // Default to low quality points
+  let activityType = "Flashcard Practice";
+
+  if (quality >= 4) {
+    points = POINTS.FLASHCARD_PRACTICE_HIGH;
+    activityType = "Flashcard Practice (High Quality)";
+  } else if (quality === 3) {
+    points = POINTS.FLASHCARD_PRACTICE_MEDIUM;
+    activityType = "Flashcard Practice (Medium Quality)";
+  }
+
+  await updateLeaderboardPoints(
+    studentId,
+    points,
+    activityType,
     undefined,
     undefined
   );

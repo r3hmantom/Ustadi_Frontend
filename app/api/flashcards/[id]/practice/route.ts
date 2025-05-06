@@ -7,6 +7,7 @@ import {
 } from "@/db/types";
 import { getSession } from "../../../auth/utils";
 import { executeQuery } from "@/db/utils";
+import { awardFlashcardPracticePoints } from "@/app/services/leaderboardService";
 
 // POST handler for practicing flashcards
 export async function POST(
@@ -165,6 +166,9 @@ export async function POST(
     };
 
     await executeQuery(activityQuery, activityParams);
+
+    // Update leaderboard points for flashcard practice
+    await awardFlashcardPracticePoints(session.user.studentId, quality);
 
     if (
       updateResult.success &&
