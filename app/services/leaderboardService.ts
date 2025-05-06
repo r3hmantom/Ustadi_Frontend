@@ -10,18 +10,26 @@ export type PeriodType = "Weekly" | "Monthly";
 /**
  * Fetches leaderboard data based on period type
  */
-export async function fetchLeaderboard(periodType: PeriodType = "Weekly"): Promise<LeaderboardResponse> {
+export async function fetchLeaderboard(
+  periodType: PeriodType = "Weekly"
+): Promise<LeaderboardResponse> {
   try {
     // Use absolute URL for proper handling in both client and server contexts
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 
-      (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
-      
-    const response = await fetch(`${baseUrl}/api/leaderboard?period_type=${periodType}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_URL ||
+      (typeof window !== "undefined"
+        ? window.location.origin
+        : "http://localhost:3000");
+
+    const response = await fetch(
+      `${baseUrl}/api/leaderboard?period_type=${periodType}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -49,9 +57,12 @@ export async function updateLeaderboardPoints(
 ): Promise<{ success: boolean; message: string }> {
   try {
     // Use absolute URL for proper handling in both client and server contexts
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 
-      (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
-      
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_URL ||
+      (typeof window !== "undefined"
+        ? window.location.origin
+        : "http://localhost:3000");
+
     const response = await fetch(`${baseUrl}/api/leaderboard`, {
       method: "POST",
       headers: {
@@ -68,7 +79,10 @@ export async function updateLeaderboardPoints(
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error?.message || `Error ${response.status}: ${response.statusText}`);
+      throw new Error(
+        errorData.error?.message ||
+          `Error ${response.status}: ${response.statusText}`
+      );
     }
 
     const result = await response.json();
@@ -80,7 +94,8 @@ export async function updateLeaderboardPoints(
     console.error("Error updating leaderboard points:", error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Failed to update points",
+      message:
+        error instanceof Error ? error.message : "Failed to update points",
     };
   }
 }
@@ -100,7 +115,7 @@ export const POINTS = {
  * Updates leaderboard points when a task is completed
  */
 export async function awardTaskCompletionPoints(
-  studentId: number, 
+  studentId: number,
   taskId: number
 ): Promise<void> {
   await updateLeaderboardPoints(
@@ -115,9 +130,9 @@ export async function awardTaskCompletionPoints(
  * Updates leaderboard points when a quiz is completed
  */
 export async function awardQuizCompletionPoints(
-  studentId: number, 
-  quizId: number, 
-  score: number, 
+  studentId: number,
+  quizId: number,
+  score: number,
   totalQuestions: number
 ): Promise<void> {
   // Award base points for completing the quiz
@@ -128,7 +143,7 @@ export async function awardQuizCompletionPoints(
     undefined,
     quizId
   );
-  
+
   // Award bonus points for perfect score
   if (score === totalQuestions) {
     await updateLeaderboardPoints(
@@ -149,10 +164,11 @@ export async function awardStudySessionPoints(
   sessionId: number,
   sessionType: string
 ): Promise<void> {
-  const points = sessionType === "Revision" 
-    ? POINTS.REVISION_COMPLETED 
-    : POINTS.STUDY_SESSION_COMPLETED;
-    
+  const points =
+    sessionType === "Revision"
+      ? POINTS.REVISION_COMPLETED
+      : POINTS.STUDY_SESSION_COMPLETED;
+
   await updateLeaderboardPoints(
     studentId,
     points,
