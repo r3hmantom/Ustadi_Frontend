@@ -3,6 +3,7 @@ import { ApiResponse, SuccessResponse, ErrorResponse } from "@/db/utils";
 import { StudySession } from "@/db/types";
 import { getSession } from "../../auth/utils";
 import { executeQuery } from "@/db/utils";
+import { awardStudySessionPoints } from "@/app/services/leaderboardService";
 
 /**
  * GET /api/study-sessions/[id]
@@ -180,6 +181,9 @@ export async function PATCH(
       );
     }
 
+    // Check if this is a completion request (adding end_time to a session that doesn't have one)
+    const isSessionCompletion = body.end_time && !existingSession.end_time;
+
     // Enforce session type enum values if provided
     if (body.session_type) {
       const validSessionTypes = ["Pomodoro", "Revision", "Group Study"];
@@ -213,7 +217,6 @@ export async function PATCH(
     // Update the session with the provided data
     const updatedSession: StudySession = {
       ...existingSession,
-      ...body,
       // Parse dates if they are provided
       start_time: body.start_time
         ? new Date(body.start_time)
@@ -298,9 +301,28 @@ export async function PATCH(
       );
     }
 
+    const updatedSessionData = updateResult.data[0];
+
+    // Award points if the session is being completed
+    if (isSessionCompletion) {
+      try {
+        // Award points asynchronously to avoid blocking the response
+        awardStudySessionPoints(
+          updatedSessionData.student_id,
+          updatedSessionData.session_id,
+          updatedSessionData.session_type
+        ).catch((err) =>
+          console.error("Error awarding study session points:", err)
+        );
+      } catch (err) {
+        // Log error but don't fail the request
+        console.error("Error trying to award study session points:", err);
+      }
+    }
+
     return NextResponse.json<SuccessResponse<StudySession>>({
       success: true,
-      data: updateResult.data[0],
+      data: updatedSessionData,
     });
   } catch (error) {
     console.error(`Error updating study session ${params.id}:`, error);

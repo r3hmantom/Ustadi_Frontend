@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,16 +20,16 @@ export default function PasswordSettings() {
   const [formData, setFormData] = useState({
     current_password: "",
     new_password: "",
-    confirm_password: ""
+    confirm_password: "",
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<{
     current_password?: string;
     new_password?: string;
     confirm_password?: string;
   }>({});
-  
+
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -31,14 +38,14 @@ export default function PasswordSettings() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Clear error when user starts typing
     if (formErrors[name as keyof typeof formErrors]) {
       setFormErrors((prev) => ({
         ...prev,
-        [name]: undefined
+        [name]: undefined,
       }));
     }
   };
@@ -81,7 +88,7 @@ export default function PasswordSettings() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -91,20 +98,22 @@ export default function PasswordSettings() {
     try {
       await changePassword({
         current_password: formData.current_password,
-        new_password: formData.new_password
+        new_password: formData.new_password,
       });
-      
+
       toast.success("Password changed successfully");
-      
+
       // Reset form
       setFormData({
         current_password: "",
         new_password: "",
-        confirm_password: ""
+        confirm_password: "",
       });
     } catch (error) {
       console.error("Failed to change password:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to change password");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to change password"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -114,9 +123,7 @@ export default function PasswordSettings() {
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Change Password</CardTitle>
-        <CardDescription>
-          Update your account password
-        </CardDescription>
+        <CardDescription>Update your account password</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
@@ -150,7 +157,9 @@ export default function PasswordSettings() {
               </Button>
             </div>
             {formErrors.current_password && (
-              <p className="text-sm text-destructive">{formErrors.current_password}</p>
+              <p className="text-sm text-destructive">
+                {formErrors.current_password}
+              </p>
             )}
           </div>
 
@@ -184,7 +193,9 @@ export default function PasswordSettings() {
               </Button>
             </div>
             {formErrors.new_password && (
-              <p className="text-sm text-destructive">{formErrors.new_password}</p>
+              <p className="text-sm text-destructive">
+                {formErrors.new_password}
+              </p>
             )}
           </div>
 
@@ -218,7 +229,9 @@ export default function PasswordSettings() {
               </Button>
             </div>
             {formErrors.confirm_password && (
-              <p className="text-sm text-destructive">{formErrors.confirm_password}</p>
+              <p className="text-sm text-destructive">
+                {formErrors.confirm_password}
+              </p>
             )}
           </div>
         </CardContent>

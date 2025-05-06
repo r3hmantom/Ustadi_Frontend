@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { executeQuery } from "@/db/utils";
+import { awardQuizCompletionPoints } from "@/app/services/leaderboardService";
 
 interface RouteParams {
   params: {
@@ -45,6 +46,18 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       );
     }
 
+    // Check if the attempt is already completed to avoid duplicate points
+    const attempt = checkResult.data[0];
+    if (attempt.is_completed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: "Quiz attempt is already completed" },
+        },
+        { status: 400 }
+      );
+    }
+
     // Calculate the score based on correct answers
     const scoreQuery = `
       SELECT COUNT(*) AS correct_count
@@ -86,9 +99,27 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const result = await executeQuery(updateQuery, updateParams);
 
     if (result.success && result.data && result.data.length > 0) {
+      const completedAttempt = result.data[0];
+
+      // Award points for completing the quiz
+      try {
+        // Award points asynchronously to avoid blocking the response
+        awardQuizCompletionPoints(
+          completedAttempt.student_id,
+          completedAttempt.quiz_id,
+          correctCount,
+          totalQuestions
+        ).catch((err) =>
+          console.error("Error awarding quiz completion points:", err)
+        );
+      } catch (err) {
+        // Log error but don't fail the request
+        console.error("Error trying to award quiz points:", err);
+      }
+
       return NextResponse.json({
         success: true,
-        data: result.data[0],
+        data: completedAttempt,
       });
     } else {
       const errorMessage = result.success

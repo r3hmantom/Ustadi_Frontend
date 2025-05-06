@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { executeQuery } from "@/db/utils";
+import { awardTaskCompletionPoints } from "@/app/services/leaderboardService";
 
 /**
  * GET /api/tasks/{id}
@@ -10,8 +11,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const paramsId = await params.id;
-    const taskId = parseInt(paramsId, 10);
+    const taskId = parseInt(params.id, 10);
 
     if (isNaN(taskId)) {
       return NextResponse.json(
@@ -20,7 +20,11 @@ export async function GET(
       );
     }
 
-    const query = "SELECT * FROM Tasks WHERE task_id = @taskId";
+    const query = `
+      SELECT *
+      FROM Tasks
+      WHERE task_id = @taskId
+    `;
     const queryParams = { taskId };
 
     const result = await executeQuery(query, queryParams);
@@ -30,7 +34,7 @@ export async function GET(
         { success: true, data: result.data[0] },
         { status: 200 }
       );
-    } else if (result.success) {
+    } else if (result.success && (!result.data || result.data.length === 0)) {
       return NextResponse.json(
         { success: false, error: { message: "Task not found" } },
         { status: 404 }
@@ -58,8 +62,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const paramsId = await params.id;
-    const taskId = parseInt(paramsId, 10);
+    const taskId = parseInt(params.id, 10);
 
     if (isNaN(taskId)) {
       return NextResponse.json(
@@ -73,6 +76,32 @@ export async function PATCH(
     // Build dynamic update query based on provided fields
     const updates: string[] = [];
     const queryParams: Record<string, unknown> = { taskId };
+
+    // Store whether this is a completion request to award points later
+    const isCompletionRequest =
+      body.completed_at !== undefined && body.completed_at !== null;
+    let wasAlreadyCompleted = !isCompletionRequest;
+
+    if (isCompletionRequest) {
+      // First check if task is already completed to avoid double awarding
+      const checkQuery = `
+        SELECT completed_at, student_id
+        FROM Tasks
+        WHERE task_id = @taskId
+      `;
+
+      const checkResult = await executeQuery(checkQuery, { taskId });
+
+      if (
+        checkResult.success &&
+        checkResult.data &&
+        checkResult.data.length > 0 &&
+        checkResult.data[0].completed_at !== null
+      ) {
+        // Task was already completed, don't award points again
+        wasAlreadyCompleted = true;
+      }
+    }
 
     // Only include fields that are provided in the update
     if (body.title !== undefined) {
@@ -138,8 +167,28 @@ export async function PATCH(
     const result = await executeQuery(query, queryParams);
 
     if (result.success && result.data && result.data.length > 0) {
+      const updatedTask = result.data[0];
+
+      // Award points if this is a task completion and wasn't already completed
+      if (
+        isCompletionRequest &&
+        !wasAlreadyCompleted &&
+        updatedTask.student_id
+      ) {
+        try {
+          // Award points asynchronously to avoid blocking the response
+          awardTaskCompletionPoints(updatedTask.student_id, taskId).catch(
+            (err) =>
+              console.error("Error awarding task completion points:", err)
+          );
+        } catch (err) {
+          // Log error but don't fail the request
+          console.error("Error trying to award task points:", err);
+        }
+      }
+
       return NextResponse.json(
-        { success: true, data: result.data[0] },
+        { success: true, data: updatedTask },
         { status: 200 }
       );
     } else if (result.success && (!result.data || result.data.length === 0)) {
@@ -183,8 +232,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const paramsId = await params.id;
-    const taskId = parseInt(paramsId, 10);
+    const taskId = parseInt(params.id, 10);
 
     if (isNaN(taskId)) {
       return NextResponse.json(
