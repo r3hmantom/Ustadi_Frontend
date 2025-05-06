@@ -45,12 +45,12 @@ export async function GET(
       WHERE flashcard_id = @flashcardId 
       AND student_id = @studentId
     `;
-    
+
     const queryParams = {
       flashcardId,
-      studentId: session.user.studentId
+      studentId: session.user.studentId,
     };
-    
+
     const result = await executeQuery<Flashcard>(query, queryParams);
 
     if (!result.success || result.data.length === 0) {
@@ -118,12 +118,12 @@ export async function PATCH(
       WHERE flashcard_id = @flashcardId 
       AND student_id = @studentId
     `;
-    
+
     const checkParams = {
       flashcardId,
-      studentId: session.user.studentId
+      studentId: session.user.studentId,
     };
-    
+
     const checkResult = await executeQuery<Flashcard>(checkQuery, checkParams);
 
     if (!checkResult.success || checkResult.data.length === 0) {
@@ -142,7 +142,7 @@ export async function PATCH(
     const updates: string[] = [];
     const updateParams: Record<string, any> = {
       flashcardId,
-      studentId: session.user.studentId
+      studentId: session.user.studentId,
     };
 
     if (payload.front_content !== undefined) {
@@ -179,7 +179,10 @@ export async function PATCH(
       AND student_id = @studentId
     `;
 
-    const updateResult = await executeQuery<Flashcard>(updateQuery, updateParams);
+    const updateResult = await executeQuery<Flashcard>(
+      updateQuery,
+      updateParams
+    );
 
     if (!updateResult.success || updateResult.data.length === 0) {
       return NextResponse.json<ErrorResponse>(
@@ -197,7 +200,7 @@ export async function PATCH(
     });
   } catch (error) {
     console.error("Error updating flashcard:", error);
-    
+
     // Handle JSON parsing errors specially
     if (error instanceof SyntaxError) {
       return NextResponse.json<ErrorResponse>(
@@ -205,7 +208,7 @@ export async function PATCH(
         { status: 400 }
       );
     }
-    
+
     // Handle all other errors
     const message =
       error instanceof Error ? error.message : "Failed to update flashcard";
@@ -256,12 +259,12 @@ export async function DELETE(
       WHERE flashcard_id = @flashcardId 
       AND student_id = @studentId
     `;
-    
+
     const checkParams = {
       flashcardId,
-      studentId: session.user.studentId
+      studentId: session.user.studentId,
     };
-    
+
     const checkResult = await executeQuery<Flashcard>(checkQuery, checkParams);
 
     if (!checkResult.success || checkResult.data.length === 0) {
@@ -283,7 +286,7 @@ export async function DELETE(
       WHERE flashcard_id = @flashcardId 
       AND student_id = @studentId
     `;
-    
+
     const deleteResult = await executeQuery(deleteQuery, checkParams);
 
     if (!deleteResult.success) {

@@ -46,11 +46,6 @@ const navItems: NavItem[] = [
     icon: <BarChart3 className="w-5 h-5" />,
   },
   {
-    label: "Groups",
-    href: "/dashboard/groups",
-    icon: <Users className="w-5 h-5" />,
-  },
-  {
     label: "Leaderboard",
     href: "/dashboard/leaderboard",
     icon: <Trophy className="w-5 h-5" />,
