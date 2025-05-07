@@ -11,6 +11,16 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from "next/link";
 import { CreateQuizDialog } from "./create-quiz-dialog";
 
+// Define a type for quizzes that may come from different sources
+interface QuizWithMixedId {
+  id?: number;
+  quiz_id?: number;
+  title: string;
+  description: string | null;
+  created_at: string | Date;
+  is_public?: boolean;
+}
+
 const QuizzesPage = () => {
   const { user } = useUser();
   const { quizzes, isLoading, error, deleteQuiz, fetchQuizzes } = useQuiz();
@@ -38,7 +48,12 @@ const QuizzesPage = () => {
     }
   );
 
-  const handleQuizCreated = (newQuiz: any) => {
+  // Helper function to get the ID from either property
+  const getQuizId = (quiz: QuizWithMixedId): number | undefined => {
+    return quiz.id !== undefined ? quiz.id : quiz.quiz_id;
+  };
+
+  const handleQuizCreated = () => {
     // After a quiz is created, refresh the list
     if (user?.studentId) {
       fetchQuizzes(user.studentId);
@@ -104,49 +119,56 @@ const QuizzesPage = () => {
             </Button>
           </div>
         ) : (
-          quizzes.map((quiz) => (
-            <Card key={quiz.id} className="p-4 flex flex-col">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-semibold text-lg">{quiz.title}</h3>
-                  <p className="text-muted-foreground text-sm line-clamp-2">
-                    {quiz.description || "No description"}
-                  </p>
+          quizzes.map((quiz, idx) => {
+            // Cast the quiz to our mixed type for type safety
+            const mixedQuiz = quiz as unknown as QuizWithMixedId;
+            const quizId = getQuizId(mixedQuiz);
+
+            return (
+              <Card key={idx} className="p-4 flex flex-col">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold text-lg">{mixedQuiz.title}</h3>
+                    <p className="text-muted-foreground text-sm line-clamp-2">
+                      {mixedQuiz.description || "No description"}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center text-xs text-muted-foreground mt-2 mb-4">
-                <span>
-                  Created: {new Date(quiz.created_at).toLocaleDateString()}
-                </span>
-                <span className="ml-4">
-                  {quiz.is_public ? "Public" : "Private"}
-                </span>
-              </div>
+                <div className="flex items-center text-xs text-muted-foreground mt-2 mb-4">
+                  <span>
+                    Created:{" "}
+                    {new Date(mixedQuiz.created_at).toLocaleDateString()}
+                  </span>
+                  <span className="ml-4">
+                    {mixedQuiz.is_public ? "Public" : "Private"}
+                  </span>
+                </div>
 
-              <div className="mt-auto flex gap-2">
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={`/dashboard/quizzes/${quiz.id}`}>
-                    <Eye className="h-4 w-4 mr-1" /> View
-                  </Link>
-                </Button>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={`/dashboard/quizzes/${quiz.id}/edit`}>
-                    <Pencil className="h-4 w-4 mr-1" /> Edit
-                  </Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => handleDeleteQuiz(quiz.id)}
-                  disabled={isDeleting}
-                >
-                  <Trash2 className="h-4 w-4 mr-1" /> Delete
-                </Button>
-              </div>
-            </Card>
-          ))
+                <div className="mt-auto flex gap-2">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/dashboard/quizzes/${quizId}`}>
+                      <Eye className="h-4 w-4 mr-1" /> View
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/dashboard/quizzes/${quizId}/edit`}>
+                      <Pencil className="h-4 w-4 mr-1" /> Edit
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => quizId && handleDeleteQuiz(quizId)}
+                    disabled={isDeleting || !quizId}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" /> Delete
+                  </Button>
+                </div>
+              </Card>
+            );
+          })
         )}
       </div>
     </div>

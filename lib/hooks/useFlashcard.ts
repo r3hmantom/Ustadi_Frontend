@@ -30,7 +30,12 @@ export function useFlashcard() {
   // Compute derived data
   const categorizedFlashcards = flashcards.reduce(
     (acc, flashcard) => {
-      const category = flashcard.category || "Uncategorized";
+      // Use the first few characters of question as category if none exists
+      const category = flashcard.category || 
+        (flashcard.question ? 
+          `Flashcard ${flashcard.id || ''}` : 
+          "Uncategorized");
+          
       if (!acc[category]) {
         acc[category] = [];
       }

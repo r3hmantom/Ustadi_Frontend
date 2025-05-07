@@ -10,7 +10,8 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const paramsId = await params.id;
+    const paramsAwaited = await params;
+    const paramsId = await paramsAwaited.id;
     const questionId = parseInt(paramsId, 10);
 
     if (isNaN(questionId)) {
@@ -122,7 +123,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const paramsId = await params.id;
+    const paramsAwaited = await params;
+    const paramsId = await paramsAwaited.id;
     const questionId = parseInt(paramsId, 10);
 
     if (isNaN(questionId)) {

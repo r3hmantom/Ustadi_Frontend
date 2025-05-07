@@ -15,6 +15,8 @@ interface Flashcard {
   last_reviewed_at?: string;
   difficulty_level: number; // 1-5 scale
   category?: string;
+  next_review_date?: string;
+  interval_days?: number;
 }
 
 interface FlashcardState {
@@ -54,7 +56,19 @@ export const useFlashcardStore = create<FlashcardState>()((set, get) => ({
 
       const flashcards = await fetchFlashcardsApi(studentId);
 
-      set({ flashcards });
+      // Map from DB schema fields to interface fields
+      const mappedFlashcards = flashcards.map(card => ({
+        id: card.flashcard_id,
+        student_id: card.student_id,
+        question: card.front_content,
+        answer: card.back_content,
+        created_at: card.created_at?.toString() || new Date().toISOString(),
+        difficulty_level: card.ease_factor ? Math.round(card.ease_factor) : 3,
+        next_review_date: card.next_review_date?.toString(),
+        interval_days: card.interval_days
+      }));
+
+      set({ flashcards: mappedFlashcards });
     } catch (err) {
       console.error("Error fetching flashcards:", err);
       set({

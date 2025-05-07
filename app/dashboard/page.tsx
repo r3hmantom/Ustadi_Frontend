@@ -107,8 +107,8 @@ const DashboardPage = () => {
               {analyticsLoading
                 ? "..."
                 : analytics?.study_time?.total_minutes
-                  ? `${Math.round(analytics.study_time.total_minutes / 60)}h`
-                  : "0h"}
+                  ? `${Math.floor(analytics.study_time.total_minutes / 60)}h ${analytics.study_time.total_minutes % 60}m`
+                  : "0h 0m"}
             </div>
             <p className="text-xs text-muted-foreground">Last 7 days</p>
           </CardContent>
@@ -187,7 +187,9 @@ const DashboardPage = () => {
                       )}
                     </div>
                     <Button size="sm" variant="ghost" asChild>
-                      <Link href={`/dashboard/tasks?id=${task?.id as string}`}>
+                      <Link
+                        href={`/dashboard/tasks?id=${task?.task_id?.toString()}`}
+                      >
                         View
                       </Link>
                     </Button>
@@ -234,9 +236,13 @@ const DashboardPage = () => {
                     key={idx}
                     className="p-3 border rounded-md hover:bg-muted/50 transition-colors"
                   >
-                    <p className="font-medium">{card.question}</p>
+                    <p className="font-medium">
+                      {typeof card.question === "string"
+                        ? card.question
+                        : `Flashcard ${idx + 1}`}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {card.category || "Uncategorized"}
+                      Flashcard #{idx + 1}
                     </p>
                   </div>
                 ))}
