@@ -11,10 +11,11 @@ import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 
 interface FlashcardCardProps {
-  flashcard: Flashcard;
-  onEdit: (flashcard: Flashcard) => void;
-  onDelete: (flashcard: Flashcard) => void;
-  onPractice: (flashcard: Flashcard) => void;
+  flashcard: any; // Accept either database-style or store-style flashcard
+  onEdit: (flashcard: any) => void;
+  onDelete: (flashcard: any) => void;
+  onPractice: (flashcard: any) => void;
+  isDeleting?: boolean;
 }
 
 const FlashcardCard = ({
@@ -22,16 +23,21 @@ const FlashcardCard = ({
   onEdit,
   onDelete,
   onPractice,
+  isDeleting = false,
 }: FlashcardCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
-  // Format the next review date as a relative time
-  const nextReviewRelative = formatDistanceToNow(
-    new Date(flashcard.next_review_date),
-    {
-      addSuffix: true,
-    }
-  );
+  // Handle either database field names or store field names
+  const frontContent = flashcard.front_content || flashcard.question || "";
+  const backContent = flashcard.back_content || flashcard.answer || "";
+  const nextReviewDate = flashcard.next_review_date || "";
+
+  // Format the next review date as a relative time (if it exists)
+  const nextReviewRelative = nextReviewDate
+    ? formatDistanceToNow(new Date(nextReviewDate), {
+        addSuffix: true,
+      })
+    : "Not scheduled";
 
   return (
     <Card
@@ -51,7 +57,7 @@ const FlashcardCard = ({
           </CardHeader>
           <CardContent className="flex-1">
             <p className="text-center font-medium whitespace-pre-wrap">
-              {flashcard.front_content}
+              {frontContent}
             </p>
           </CardContent>
           <CardFooter className="flex justify-between py-2 text-xs text-muted-foreground">
@@ -70,7 +76,7 @@ const FlashcardCard = ({
           </CardHeader>
           <CardContent className="flex-1">
             <p className="text-center font-medium whitespace-pre-wrap">
-              {flashcard.back_content}
+              {backContent}
             </p>
           </CardContent>
           <CardFooter className="flex justify-between py-2 gap-2">
@@ -92,8 +98,9 @@ const FlashcardCard = ({
                   e.stopPropagation();
                   onDelete(flashcard);
                 }}
+                disabled={isDeleting}
               >
-                Delete
+                {isDeleting ? "Deleting..." : "Delete"}
               </Button>
             </div>
             <Button

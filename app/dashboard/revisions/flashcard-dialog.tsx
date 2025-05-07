@@ -16,23 +16,24 @@ import { FlashcardFormData } from "@/app/services/flashcardService";
 interface FlashcardDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: FlashcardFormData) => Promise<void>;
+  onSubmit: (data: FlashcardFormData) => Promise<void>;
   flashcard?: Flashcard;
-  title: string;
+  title?: string;
+  isSubmitting?: boolean;
 }
 
 const FlashcardDialog = ({
   open,
   onOpenChange,
-  onSave,
+  onSubmit,
   flashcard,
-  title,
+  title = "Flashcard",
+  isSubmitting = false,
 }: FlashcardDialogProps) => {
   const [frontContent, setFrontContent] = useState(
     flashcard?.front_content || ""
   );
   const [backContent, setBackContent] = useState(flashcard?.back_content || "");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,9 +52,7 @@ const FlashcardDialog = ({
     }
 
     try {
-      setIsSubmitting(true);
-
-      await onSave({
+      await onSubmit({
         front_content: frontContent,
         back_content: backContent,
       });
@@ -64,8 +63,6 @@ const FlashcardDialog = ({
       onOpenChange(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

@@ -1,9 +1,14 @@
 "use client";
 
-import { create } from "zustand";
-import { fetchFlashcards as fetchFlashcardsApi } from "@/app/services/flashcardService";
-import { useUserStore } from "./useUserStore";
+import {
+  createFlashcard as createFlashcardApi,
+  deleteFlashcard as deleteFlashcardApi,
+  fetchFlashcards as fetchFlashcardsApi,
+  updateFlashcard as updateFlashcardApi,
+} from "@/app/services/flashcardService";
 import { api } from "@/lib/api";
+import { create } from "zustand";
+import { useUserStore } from "./useUserStore";
 
 interface Flashcard {
   id: number;
@@ -27,10 +32,8 @@ interface FlashcardState {
 
   // Actions
   fetchFlashcards: (studentId?: number) => Promise<void>;
-  createFlashcard: (
-    data: Omit<Flashcard, "id" | "student_id" | "created_at">
-  ) => Promise<void>;
-  updateFlashcard: (id: number, data: Partial<Flashcard>) => Promise<void>;
+  createFlashcard: (data: { front_content: string; back_content: string }) => Promise<void>;
+  updateFlashcard: (id: number, data: { front_content?: string; back_content?: string }) => Promise<void>;
   deleteFlashcard: (id: number) => Promise<void>;
   setCurrentFlashcard: (flashcard: Flashcard | null) => void;
   clearError: () => void;
@@ -88,19 +91,37 @@ export const useFlashcardStore = create<FlashcardState>()((set, get) => ({
         throw new Error("You must be logged in to create flashcards");
       }
 
-      const newFlashcard = await api.post<Flashcard>("/api/flashcards", {
+      // Call the API to create the flashcard
+      const flashcardData = {
         ...data,
         student_id: user.studentId,
-      });
+      };
+      
+      const newFlashcard = await createFlashcardApi(flashcardData);
+
+      // Map to our store format
+      const mappedFlashcard = {
+        id: newFlashcard.flashcard_id,
+        student_id: newFlashcard.student_id,
+        question: newFlashcard.front_content,
+        answer: newFlashcard.back_content,
+        created_at: newFlashcard.created_at?.toString() || new Date().toISOString(),
+        difficulty_level: newFlashcard.ease_factor ? Math.round(newFlashcard.ease_factor) : 3,
+        next_review_date: newFlashcard.next_review_date?.toString(),
+        interval_days: newFlashcard.interval_days
+      };
 
       set((state) => ({
-        flashcards: [...state.flashcards, newFlashcard],
+        flashcards: [...state.flashcards, mappedFlashcard],
       }));
+      
+      return mappedFlashcard;
     } catch (err) {
       console.error("Error creating flashcard:", err);
       set({
         error: err instanceof Error ? err.message : "An unknown error occurred",
       });
+      throw err;
     } finally {
       set({ isLoading: false });
     }
@@ -110,25 +131,44 @@ export const useFlashcardStore = create<FlashcardState>()((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const updatedFlashcard = await api.patch<Flashcard>(
-        `/api/flashcards/${id}`,
-        data
-      );
+      // Map data fields to match API expectations
+      const apiData = {
+        front_content: data.front_content,
+        back_content: data.back_content,
+      };
+
+      // Call the API to update the flashcard
+      const updatedFlashcard = await updateFlashcardApi(id, apiData);
+      
+      // Map to our store format
+      const mappedFlashcard = {
+        id: updatedFlashcard.flashcard_id,
+        student_id: updatedFlashcard.student_id,
+        question: updatedFlashcard.front_content,
+        answer: updatedFlashcard.back_content,
+        created_at: updatedFlashcard.created_at?.toString() || new Date().toISOString(),
+        difficulty_level: updatedFlashcard.ease_factor ? Math.round(updatedFlashcard.ease_factor) : 3,
+        next_review_date: updatedFlashcard.next_review_date?.toString(),
+        interval_days: updatedFlashcard.interval_days
+      };
 
       set((state) => ({
         flashcards: state.flashcards.map((flashcard) =>
-          flashcard.id === id ? updatedFlashcard : flashcard
+          flashcard.id === id ? mappedFlashcard : flashcard
         ),
         currentFlashcard:
           state.currentFlashcard?.id === id
-            ? updatedFlashcard
+            ? mappedFlashcard
             : state.currentFlashcard,
       }));
+      
+      return mappedFlashcard;
     } catch (err) {
       console.error(`Error updating flashcard ${id}:`, err);
       set({
         error: err instanceof Error ? err.message : "An unknown error occurred",
       });
+      throw err;
     } finally {
       set({ isLoading: false });
     }
@@ -138,7 +178,8 @@ export const useFlashcardStore = create<FlashcardState>()((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      await api.delete(`/api/flashcards/${id}`);
+      // Call the API to delete the flashcard
+      await deleteFlashcardApi(id);
 
       set((state) => ({
         flashcards: state.flashcards.filter((flashcard) => flashcard.id !== id),
@@ -150,6 +191,7 @@ export const useFlashcardStore = create<FlashcardState>()((set, get) => ({
       set({
         error: err instanceof Error ? err.message : "An unknown error occurred",
       });
+      throw err;
     } finally {
       set({ isLoading: false });
     }

@@ -15,8 +15,8 @@ import { toast } from "sonner";
 interface PracticeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  flashcard: Flashcard | null;
-  onComplete: (updatedFlashcard: Flashcard) => void;
+  flashcard: any | null; // Accept either data format
+  onComplete: (updatedFlashcard: any) => void;
 }
 
 const PracticeDialog = ({
@@ -36,9 +36,20 @@ const PracticeDialog = ({
     }
   }, [open, flashcard]);
 
+  // Handle either data format
+  const getFlashcardId = () => {
+    if (!flashcard) return null;
+    return flashcard.flashcard_id || flashcard.id;
+  };
+
+  const frontContent = flashcard?.front_content || flashcard?.question || "";
+  const backContent = flashcard?.back_content || flashcard?.answer || "";
+
   // Handle quality rating (1-5) submission
   const handleRateRecall = async (quality: number) => {
-    if (!flashcard) {
+    const flashcardId = getFlashcardId();
+    
+    if (!flashcardId) {
       toast.error("No flashcard selected");
       return;
     }
@@ -46,7 +57,7 @@ const PracticeDialog = ({
     try {
       setIsSubmitting(true);
       const updatedFlashcard = await practiceFlashcard(
-        flashcard.flashcard_id,
+        flashcardId,
         quality
       );
       toast.success("Practice recorded successfully");
@@ -78,14 +89,14 @@ const PracticeDialog = ({
                 <div className="text-center">
                   <h3 className="font-semibold mb-4">Question</h3>
                   <p className="whitespace-pre-wrap">
-                    {flashcard.front_content}
+                    {frontContent}
                   </p>
                 </div>
               ) : (
                 <div className="text-center">
                   <h3 className="font-semibold mb-4">Answer</h3>
                   <p className="whitespace-pre-wrap">
-                    {flashcard.back_content}
+                    {backContent}
                   </p>
                 </div>
               )}
@@ -105,6 +116,7 @@ const PracticeDialog = ({
                     variant="outline"
                     className="text-destructive border-destructive cursor-pointer hover:bg-destructive/10 px-4 py-2"
                     onClick={() => handleRateRecall(1)}
+                    disabled={isSubmitting}
                   >
                     1 - Did not know at all
                   </Badge>
@@ -112,6 +124,7 @@ const PracticeDialog = ({
                     variant="outline"
                     className="cursor-pointer hover:bg-muted px-4 py-2"
                     onClick={() => handleRateRecall(2)}
+                    disabled={isSubmitting}
                   >
                     2 - Barely remembered
                   </Badge>
@@ -119,6 +132,7 @@ const PracticeDialog = ({
                     variant="outline"
                     className="cursor-pointer hover:bg-muted px-4 py-2"
                     onClick={() => handleRateRecall(3)}
+                    disabled={isSubmitting}
                   >
                     3 - Struggled but recalled
                   </Badge>
@@ -126,6 +140,7 @@ const PracticeDialog = ({
                     variant="outline"
                     className="text-primary border-primary cursor-pointer hover:bg-primary/10 px-4 py-2"
                     onClick={() => handleRateRecall(4)}
+                    disabled={isSubmitting}
                   >
                     4 - Recalled after a moment
                   </Badge>
@@ -133,6 +148,7 @@ const PracticeDialog = ({
                     variant="outline"
                     className="text-green-600 border-green-600 cursor-pointer hover:bg-green-600/10 px-4 py-2"
                     onClick={() => handleRateRecall(5)}
+                    disabled={isSubmitting}
                   >
                     5 - Perfect recall
                   </Badge>

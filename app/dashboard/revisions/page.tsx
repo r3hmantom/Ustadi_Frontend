@@ -274,6 +274,7 @@ const RevisionsPage = () => {
         onOpenChange={setCreateDialogOpen}
         onSubmit={handleCreate}
         isSubmitting={isCreating}
+        title="Create Flashcard"
       />
 
       {/* Edit Flashcard Dialog */}
@@ -283,6 +284,7 @@ const RevisionsPage = () => {
         onSubmit={handleUpdate}
         flashcard={selectedFlashcard}
         isSubmitting={isUpdating}
+        title="Edit Flashcard"
       />
 
       {/* Practice Flashcard Dialog */}
