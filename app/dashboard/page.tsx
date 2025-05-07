@@ -22,13 +22,9 @@ import Link from "next/link";
 
 const DashboardPage = () => {
   const { user, isAuthenticated, loading: userLoading } = useUser();
-  const { activeTasks, completedTasks, isLoading: tasksLoading } = useTask();
+  const { activeTasks, isLoading: tasksLoading } = useTask();
   const { analytics, isLoading: analyticsLoading } = useAnalytics("week");
-  const {
-    topRankings,
-    currentUserRank,
-    isLoading: leaderboardLoading,
-  } = useLeaderboard();
+  const { currentUserRank, isLoading: leaderboardLoading } = useLeaderboard();
   const { flashcards, isLoading: flashcardsLoading } = useFlashcard();
 
   if (userLoading || !isAuthenticated) {
@@ -53,7 +49,7 @@ const DashboardPage = () => {
             Welcome back, {user?.fullName}!
           </h1>
           <p className="text-muted-foreground">
-            Here's an overview of your recent activity and progress
+            Here&apos;s an overview of your recent activity and progress
           </p>
         </div>
       </div>
@@ -171,14 +167,15 @@ const DashboardPage = () => {
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>No tasks</AlertTitle>
                 <AlertDescription>
-                  You don't have any active tasks. Create one to get started.
+                  You don&apos;t have any active tasks. Create one to get
+                  started.
                 </AlertDescription>
               </Alert>
             ) : (
               <ul className="space-y-3">
-                {activeTasks.slice(0, 5).map((task) => (
+                {activeTasks.slice(0, 5).map((task, idx) => (
                   <li
-                    key={task.id}
+                    key={idx}
                     className="flex items-center justify-between p-3 border rounded-md"
                   >
                     <div>
@@ -190,7 +187,9 @@ const DashboardPage = () => {
                       )}
                     </div>
                     <Button size="sm" variant="ghost" asChild>
-                      <Link href={`/dashboard/tasks?id=${task.id}`}>View</Link>
+                      <Link href={`/dashboard/tasks?id=${task?.id as string}`}>
+                        View
+                      </Link>
                     </Button>
                   </li>
                 ))}
@@ -225,14 +224,14 @@ const DashboardPage = () => {
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>No flashcards</AlertTitle>
                 <AlertDescription>
-                  You don't have any flashcards. Create one to get started.
+                  You don&apos;t have any flashcards. Create one to get started.
                 </AlertDescription>
               </Alert>
             ) : (
               <div className="space-y-3">
-                {flashcards.slice(0, 3).map((card) => (
+                {flashcards.slice(0, 3).map((card, idx) => (
                   <div
-                    key={card.id}
+                    key={idx}
                     className="p-3 border rounded-md hover:bg-muted/50 transition-colors"
                   >
                     <p className="font-medium">{card.question}</p>
