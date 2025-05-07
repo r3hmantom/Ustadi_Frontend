@@ -115,6 +115,27 @@ const LeaderboardTable = ({
     });
   };
 
+  const getOrdinalSuffix = (num: number): string => {
+    const j = num % 10;
+    const k = num % 100;
+    if (j === 1 && k !== 11) {
+      return num + "st";
+    }
+    if (j === 2 && k !== 12) {
+      return num + "nd";
+    }
+    if (j === 3 && k !== 13) {
+      return num + "rd";
+    }
+    return num + "th";
+  };
+
+  // Helper function to get rank from entry, handling both possible field names
+  const getRank = (entry: any): number => {
+    // First check for rank, then for rank_position (from database)
+    return entry.rank || entry.rank_position || 0;
+  };
+
   const getPeriodLabel = (entry: any) => {
     const startDate = new Date(entry.start_date);
 
@@ -145,56 +166,59 @@ const LeaderboardTable = ({
             </tr>
           </thead>
           <tbody>
-            {data.map((entry) => (
-              <tr
-                key={entry.entry_id}
-                className={`border-b hover:bg-muted/50 transition-colors ${
-                  currentUserId === entry.student_id ? "bg-primary/10" : ""
-                }`}
-              >
-                <td className="p-4">
-                  {entry.rank === 1 && (
-                    <Badge className="bg-yellow-500 text-primary-foreground">
-                      🏆 1st
-                    </Badge>
-                  )}
-                  {entry.rank === 2 && (
-                    <Badge className="bg-slate-400 text-primary-foreground">
-                      🥈 2nd
-                    </Badge>
-                  )}
-                  {entry.rank === 3 && (
-                    <Badge className="bg-amber-600 text-primary-foreground">
-                      🥉 3rd
-                    </Badge>
-                  )}
-                  {entry.rank > 3 && (
-                    <span className="text-muted-foreground">
-                      {entry.rank}th
-                    </span>
-                  )}
-                </td>
-                <td className="p-4">
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-                      {entry.student_name?.charAt(0).toUpperCase() || "U"}
+            {data.map((entry) => {
+              const rank = getRank(entry);
+              return (
+                <tr
+                  key={entry.entry_id}
+                  className={`border-b hover:bg-muted/50 transition-colors ${
+                    currentUserId === entry.student_id ? "bg-primary/10" : ""
+                  }`}
+                >
+                  <td className="p-4">
+                    {rank === 1 && (
+                      <Badge className="bg-yellow-500 text-primary-foreground">
+                        🏆 1st
+                      </Badge>
+                    )}
+                    {rank === 2 && (
+                      <Badge className="bg-slate-400 text-primary-foreground">
+                        🥈 2nd
+                      </Badge>
+                    )}
+                    {rank === 3 && (
+                      <Badge className="bg-amber-600 text-primary-foreground">
+                        🥉 3rd
+                      </Badge>
+                    )}
+                    {rank > 3 && (
+                      <span className="text-muted-foreground">
+                        {getOrdinalSuffix(rank)}
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+                        {entry.student_name?.charAt(0).toUpperCase() || "U"}
+                      </div>
+                      <span className="font-medium">
+                        {entry.student_name || "Unknown User"}
+                        {currentUserId === entry.student_id && (
+                          <Badge className="ml-2 bg-primary text-primary-foreground">
+                            You
+                          </Badge>
+                        )}
+                      </span>
                     </div>
-                    <span className="font-medium">
-                      {entry.student_name || "Unknown User"}
-                      {currentUserId === entry.student_id && (
-                        <Badge className="ml-2 bg-primary text-primary-foreground">
-                          You
-                        </Badge>
-                      )}
-                    </span>
-                  </div>
-                </td>
-                <td className="p-4 text-muted-foreground">
-                  {getPeriodLabel(entry)}
-                </td>
-                <td className="p-4 text-right font-bold">{entry.points}</td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="p-4 text-muted-foreground">
+                    {getPeriodLabel(entry)}
+                  </td>
+                  <td className="p-4 text-right font-bold">{entry.points}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
