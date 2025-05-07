@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useLeaderboard } from "@/lib/hooks/useLeaderboard";
 import { useUser } from "@/lib/hooks/useUser";
+import { Loader } from "@/components/ui/loader";
 
 const LeaderboardPage = () => {
   const { user } = useUser();
@@ -74,8 +75,8 @@ const LeaderboardTable = ({
   if (loading) {
     return (
       <Card className="p-6">
-        <div className="flex justify-center">
-          <p>Loading leaderboard data...</p>
+        <div className="flex justify-center py-8">
+          <Loader size="small" text="Loading leaderboard data..." />
         </div>
       </Card>
     );

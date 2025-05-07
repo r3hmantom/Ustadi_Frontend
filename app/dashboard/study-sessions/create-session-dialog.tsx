@@ -21,6 +21,8 @@ import {
 import { fetchTasks } from "@/app/services/taskService";
 import { Task } from "@/db/types";
 import { useUser } from "@/lib/hooks/useUser";
+import { Loader } from "@/components/ui/loader";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 interface CreateSessionDialogProps {
   loading: boolean;
@@ -123,7 +125,13 @@ export function CreateSessionDialog({
               <SelectTrigger className="col-span-3">
                 <SelectValue
                   placeholder={
-                    tasksLoading ? "Loading tasks..." : "Select a task"
+                    tasksLoading ? (
+                      <div className="flex items-center">
+                        <Loader size="small" className="mr-2" /> Loading tasks...
+                      </div>
+                    ) : (
+                      "Select a task"
+                    )
                   }
                 />
               </SelectTrigger>
@@ -160,14 +168,15 @@ export function CreateSessionDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button
+          <LoadingButton
             type="submit"
             onClick={handleCreateSession}
-            disabled={loading || !newSession.task_id}
+            isLoading={loading}
+            disabled={!newSession.task_id}
+            icon={<Play className="h-4 w-4" />}
           >
-            <Play className="mr-2 h-4 w-4" />
             Start Session
-          </Button>
+          </LoadingButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

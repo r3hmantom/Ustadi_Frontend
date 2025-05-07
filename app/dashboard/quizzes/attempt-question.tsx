@@ -5,6 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ChevronRightIcon, ChevronLeftIcon, CheckIcon } from "lucide-react";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 interface AttemptQuestionProps {
   question: Question;
@@ -112,23 +113,26 @@ export default function AttemptQuestion({
         </RadioGroup>
 
         <div className="flex justify-between pt-4">
-          <Button
+          <LoadingButton
             onClick={onPrevious}
             variant="outline"
             type="button"
-            disabled={isFirst || isSubmitting}
+            disabled={isFirst}
+            isLoading={isSubmitting}
             className={isFirst ? "invisible" : ""}
+            icon={<ChevronLeftIcon className="h-4 w-4" />}
           >
-            <ChevronLeftIcon className="h-4 w-4 mr-2" /> Previous
-          </Button>
-          <Button
+            Previous
+          </LoadingButton>
+          <LoadingButton
             onClick={onNext}
             type="button"
-            disabled={isSubmitting}
+            isLoading={isSubmitting}
             className={isLast ? "invisible" : ""}
+            icon={<ChevronRightIcon className="h-4 w-4 ml-2" />}
           >
-            Next <ChevronRightIcon className="h-4 w-4 ml-2" />
-          </Button>
+            Next
+          </LoadingButton>
         </div>
       </CardContent>
     </Card>

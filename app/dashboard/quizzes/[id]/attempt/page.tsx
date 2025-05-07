@@ -24,6 +24,8 @@ import AttemptQuestion from "../../attempt-question";
 import { toast } from "sonner";
 import { ArrowLeftIcon, CheckCircleIcon, Loader2Icon } from "lucide-react";
 import Link from "next/link";
+import { Loader } from "@/components/ui/loader";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 export default function QuizAttemptPage() {
   const router = useRouter();
@@ -142,8 +144,7 @@ export default function QuizAttemptPage() {
   if (loading || isUserLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader2Icon className="h-8 w-8 animate-spin mb-4" />
-        <p>Loading quiz...</p>
+        <Loader size="big" text="Loading quiz..." />
       </div>
     );
   }
@@ -218,22 +219,16 @@ export default function QuizAttemptPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button
+              <LoadingButton
                 className="w-full"
                 onClick={handleComplete}
-                disabled={submitting || !allQuestionsAnswered}
+                disabled={!allQuestionsAnswered}
+                isLoading={submitting}
+                loadingText="Submitting..."
+                icon={<CheckCircleIcon className="h-4 w-4" />}
               >
-                {submitting ? (
-                  <>
-                    <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />{" "}
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircleIcon className="mr-2 h-4 w-4" /> Submit Quiz
-                  </>
-                )}
-              </Button>
+                Submit Quiz
+              </LoadingButton>
             </CardFooter>
           </Card>
 

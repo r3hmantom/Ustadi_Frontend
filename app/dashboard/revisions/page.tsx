@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PlusCircle, AlertCircle } from "lucide-react";
+import { Loader } from "@/components/ui/loader";
 
 const RevisionsPage = () => {
   const { user } = useUser();
@@ -171,7 +172,9 @@ const RevisionsPage = () => {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="text-center py-8">Loading flashcards...</div>
+                <div className="text-center py-8">
+                  <Loader size="small" text="Loading flashcards..." />
+                </div>
               ) : filteredFlashcards.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground mb-4">
@@ -211,7 +214,9 @@ const RevisionsPage = () => {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="text-center py-8">Loading flashcards...</div>
+                <div className="text-center py-8">
+                  <Loader size="small" text="Loading flashcards..." />
+                </div>
               ) : filteredFlashcards.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   No flashcards due for review today.
@@ -244,7 +249,9 @@ const RevisionsPage = () => {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="text-center py-8">Loading flashcards...</div>
+                <div className="text-center py-8">
+                  <Loader size="small" text="Loading flashcards..." />
+                </div>
               ) : filteredFlashcards.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   No flashcards scheduled for future review.

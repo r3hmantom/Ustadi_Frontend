@@ -16,6 +16,7 @@ import {
   Loader2Icon,
 } from "lucide-react";
 import Link from "next/link";
+import { Loader } from "@/components/ui/loader";
 
 export default function QuizResultsPage() {
   const router = useRouter();
@@ -54,8 +55,7 @@ export default function QuizResultsPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader2Icon className="h-8 w-8 animate-spin mb-4" />
-        <p>Loading quiz results...</p>
+        <Loader size="big" text="Loading quiz results..." />
       </div>
     );
   }

@@ -14,8 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { updateProfile } from "@/app/services/settingsService";
 import { UserProfile } from "@/db/types";
-import { Loader2 } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 interface ProfileSettingsProps {
   user: UserProfile;
@@ -148,10 +149,14 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <LoadingButton 
+            type="submit" 
+            isLoading={isSubmitting}
+            loadingText="Saving..."
+            icon={<Save className="h-4 w-4" />}
+          >
             Save Changes
-          </Button>
+          </LoadingButton>
         </CardFooter>
       </form>
     </Card>

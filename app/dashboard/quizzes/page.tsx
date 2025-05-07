@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from "next/link";
 import { CreateQuizDialog } from "./create-quiz-dialog";
+import { Loader } from "@/components/ui/loader";
 
 // Define a type for quizzes that may come from different sources
 interface QuizWithMixedId {
@@ -64,7 +65,7 @@ const QuizzesPage = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
-        <div className="text-muted-foreground">Loading quizzes...</div>
+        <Loader size="big" text="Loading quizzes..." />
       </div>
     );
   }

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle, AlertCircle, Trash } from "lucide-react";
+import { Loader } from "@/components/ui/loader";
 
 export default function TaskListExample() {
   const {
@@ -56,21 +57,9 @@ export default function TaskListExample() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Card key={i} className="overflow-hidden">
-            <CardHeader className="p-4">
-              <Skeleton className="h-5 w-2/3" />
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-3/4" />
-              <div className="flex justify-end mt-4 space-x-2">
-                <Skeleton className="h-9 w-24" />
-                <Skeleton className="h-9 w-24" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        <div className="flex flex-col items-center justify-center py-12">
+          <Loader size="big" text="Loading tasks..." />
+        </div>
       </div>
     );
   }

@@ -3,6 +3,7 @@ import { CalendarDays } from "lucide-react";
 import { StudySession } from "@/db/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SessionCard } from "./session-card";
+import { Loader } from "@/components/ui/loader";
 
 interface GroupedSessions {
   date: string;
@@ -43,7 +44,11 @@ export function SessionsList({
   };
 
   if (loading) {
-    return <p>Loading sessions...</p>;
+    return (
+      <div className="flex justify-center py-8">
+        <Loader size="small" text="Loading sessions..." />
+      </div>
+    );
   }
 
   if (studySessions.length === 0) {

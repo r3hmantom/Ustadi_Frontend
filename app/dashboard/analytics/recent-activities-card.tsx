@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { Activity, Clock, Award } from "lucide-react";
+import { Loader } from "@/components/ui/loader";
 
 interface RecentActivity {
   activity_type: string;
@@ -39,17 +40,26 @@ export default function RecentActivitiesCard({
       .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
+  if (isLoading) {
+    return (
+      <Card className="col-span-1 md:col-span-4">
+        <CardHeader>
+          <CardTitle>Recent Activities</CardTitle>
+        </CardHeader>
+        <CardContent className="flex justify-center items-center py-8">
+          <Loader size="small" text="Loading recent activities..." />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="col-span-1 md:col-span-2">
       <CardHeader>
         <CardTitle>Recent Activities</CardTitle>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="flex h-[200px] items-center justify-center">
-            Loading activities...
-          </div>
-        ) : data && data.length > 0 ? (
+        {data && data.length > 0 ? (
           <div className="space-y-4">
             {data.map((activity, i) => (
               <div

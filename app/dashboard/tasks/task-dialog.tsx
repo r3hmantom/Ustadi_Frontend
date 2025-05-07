@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Loader } from "@/components/ui/loader";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 interface TaskDialogProps {
   open: boolean;
@@ -212,19 +214,14 @@ export function TaskDialog({
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {isEditMode ? "Updating..." : "Creating..."}
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      {isEditMode ? "Update Task" : "Create Task"}
-                    </>
-                  )}
-                </Button>
+                <LoadingButton 
+                  type="submit" 
+                  isLoading={isSubmitting}
+                  loadingText={isEditMode ? "Updating..." : "Creating..."}
+                  icon={<Save className="h-4 w-4" />}
+                >
+                  {isEditMode ? "Update Task" : "Create Task"}
+                </LoadingButton>
               </div>
             </form>
           </motion.div>

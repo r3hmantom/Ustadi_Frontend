@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Task } from "@/db/types";
+import { Loader } from "@/components/ui/loader";
 
 interface TaskListProps {
   tasks: Task[];
@@ -28,7 +29,11 @@ export const TaskList = ({
   onDelete,
 }: TaskListProps) => {
   if (isLoading) {
-    return <p>Loading tasks...</p>;
+    return (
+      <div className="flex justify-center py-8">
+        <Loader size="small" text="Loading tasks..." />
+      </div>
+    );
   }
 
   if (tasks.length === 0) {

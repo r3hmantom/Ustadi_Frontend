@@ -13,8 +13,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { changePassword } from "@/app/services/settingsService";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 export default function PasswordSettings() {
   const [formData, setFormData] = useState({
@@ -236,10 +237,14 @@ export default function PasswordSettings() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <LoadingButton 
+            type="submit" 
+            isLoading={isSubmitting}
+            loadingText="Changing Password..."
+            icon={<Lock className="h-4 w-4" />}
+          >
             Change Password
-          </Button>
+          </LoadingButton>
         </CardFooter>
       </form>
     </Card>

@@ -19,6 +19,7 @@ import ActivityDistributionCard from "./activity-distribution-card";
 import StudyTimeCard from "./study-time-card";
 import QuizPerformanceCard from "./quiz-performance-card";
 import RecentActivitiesCard from "./recent-activities-card";
+import { Loader } from "@/components/ui/loader";
 
 const AnalyticsPage = () => {
   const { user, loading: userLoading } = useUser();
@@ -38,7 +39,7 @@ const AnalyticsPage = () => {
   if (userLoading) {
     return (
       <div className="container mx-auto py-6 flex justify-center items-center min-h-[300px]">
-        <p>Loading...</p>
+        <Loader size="big" text="Loading analytics..." />
       </div>
     );
   }

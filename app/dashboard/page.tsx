@@ -19,6 +19,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { CheckCircle, BookOpen, AlertCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { Loader } from "@/components/ui/loader";
 
 const DashboardPage = () => {
   const { user, isAuthenticated, loading: userLoading } = useUser();
@@ -31,11 +32,13 @@ const DashboardPage = () => {
     return (
       <div className="container py-6">
         <div className="flex justify-center items-center min-h-[50vh]">
-          <div className="text-muted-foreground">
-            {userLoading
-              ? "Loading..."
-              : "Please log in to view your dashboard"}
-          </div>
+          {userLoading ? (
+            <Loader size="big" text="Loading your dashboard..." />
+          ) : (
+            <div className="text-muted-foreground">
+              Please log in to view your dashboard
+            </div>
+          )}
         </div>
       </div>
     );
@@ -62,7 +65,7 @@ const DashboardPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {tasksLoading ? "..." : activeTasks.length}
+              {tasksLoading ? <Loader size="small" /> : activeTasks.length}
             </div>
             <p className="text-xs text-muted-foreground">Active tasks</p>
           </CardContent>
@@ -82,7 +85,7 @@ const DashboardPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {flashcardsLoading ? "..." : flashcards.length}
+              {flashcardsLoading ? <Loader size="small" /> : flashcards.length}
             </div>
             <p className="text-xs text-muted-foreground">
               Flashcards to review
@@ -104,11 +107,13 @@ const DashboardPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {analyticsLoading
-                ? "..."
-                : analytics?.study_time?.total_minutes
-                  ? `${Math.floor(analytics.study_time.total_minutes / 60)}h ${analytics.study_time.total_minutes % 60}m`
-                  : "0h 0m"}
+              {analyticsLoading ? (
+                <Loader size="small" />
+              ) : analytics?.study_time?.total_minutes ? (
+                `${Math.floor(analytics.study_time.total_minutes / 60)}h ${analytics.study_time.total_minutes % 60}m`
+              ) : (
+                "0h 0m"
+              )}
             </div>
             <p className="text-xs text-muted-foreground">Last 7 days</p>
           </CardContent>
@@ -128,11 +133,13 @@ const DashboardPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {leaderboardLoading
-                ? "..."
-                : currentUserRank && currentUserRank.rank
-                  ? `#${currentUserRank.rank}`
-                  : "N/A"}
+              {leaderboardLoading ? (
+                <Loader size="small" />
+              ) : currentUserRank && currentUserRank.rank ? (
+                `#${currentUserRank.rank}`
+              ) : (
+                "N/A"
+              )}
             </div>
             <p className="text-xs text-muted-foreground">Weekly leaderboard</p>
           </CardContent>
@@ -159,8 +166,8 @@ const DashboardPage = () => {
           </CardHeader>
           <CardContent>
             {tasksLoading ? (
-              <div className="py-4 text-center text-muted-foreground">
-                Loading tasks...
+              <div className="py-4 text-center">
+                <Loader size="small" text="Loading tasks..." />
               </div>
             ) : activeTasks.length === 0 ? (
               <Alert>
@@ -218,8 +225,8 @@ const DashboardPage = () => {
           </CardHeader>
           <CardContent>
             {flashcardsLoading ? (
-              <div className="py-4 text-center text-muted-foreground">
-                Loading flashcards...
+              <div className="py-4 text-center">
+                <Loader size="small" text="Loading flashcards..." />
               </div>
             ) : flashcards.length === 0 ? (
               <Alert>

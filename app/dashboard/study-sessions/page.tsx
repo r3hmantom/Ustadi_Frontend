@@ -16,6 +16,7 @@ import {
 import { useUser } from "@/lib/hooks/useUser";
 import { CreateSessionDialog } from "./create-session-dialog";
 import { SessionsList } from "./sessions-list";
+import { Loader } from "@/components/ui/loader";
 
 export default function StudySessions() {
   const { user } = useUser();

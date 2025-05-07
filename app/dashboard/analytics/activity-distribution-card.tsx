@@ -8,6 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { Loader } from "@/components/ui/loader";
 
 interface ActivityDistributionCardProps {
   data: ActivityDistribution[];
@@ -32,17 +33,26 @@ export default function ActivityDistributionCard({
       .replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Activity Distribution</CardTitle>
+        </CardHeader>
+        <CardContent className="flex justify-center items-center py-8">
+          <Loader size="small" text="Loading activity data..." />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="col-span-1 md:col-span-2">
       <CardHeader>
         <CardTitle>Activity Distribution</CardTitle>
       </CardHeader>
       <CardContent className="h-[300px]">
-        {isLoading ? (
-          <div className="flex h-full items-center justify-center">
-            Loading activity data...
-          </div>
-        ) : chartData.length > 0 ? (
+        {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
               <XAxis dataKey="name" />

@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit2, Check, Trash2, Loader2, Calendar, Star } from "lucide-react";
+import { Loader } from "@/components/ui/loader";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 // Custom function to get color based on priority
 export const getPriorityColor = (priority: number) => {
@@ -124,8 +126,7 @@ export const AnimatedTaskList = ({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
-        <p className="text-muted-foreground">Loading your tasks...</p>
+        <Loader size="big" text="Loading your tasks..." />
       </div>
     );
   }
@@ -271,35 +272,27 @@ export const AnimatedTaskList = ({
                   )}
 
                   {onComplete && !task.completed_at && (
-                    <Button
+                    <LoadingButton
                       variant="outline"
                       size="sm"
                       onClick={(e) => handleCompleteClick(e, task.task_id)}
-                      disabled={isTaskProcessing(task.task_id, "completing")}
+                      isLoading={isTaskProcessing(task.task_id, "completing")}
+                      icon={<Check className="h-3 w-3" />}
                     >
-                      {isTaskProcessing(task.task_id, "completing") ? (
-                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                      ) : (
-                        <Check className="h-3 w-3 mr-1" />
-                      )}
                       Complete
-                    </Button>
+                    </LoadingButton>
                   )}
 
                   {onDelete && !isCompleted && (
-                    <Button
+                    <LoadingButton
                       variant="destructive"
                       size="sm"
                       onClick={(e) => handleDeleteClick(e, task.task_id)}
-                      disabled={isTaskProcessing(task.task_id, "deleting")}
+                      isLoading={isTaskProcessing(task.task_id, "deleting")}
+                      icon={<Trash2 className="h-3 w-3" />}
                     >
-                      {isTaskProcessing(task.task_id, "deleting") ? (
-                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-3 w-3 mr-1" />
-                      )}
                       Delete
-                    </Button>
+                    </LoadingButton>
                   )}
                 </CardFooter>
               </Card>
