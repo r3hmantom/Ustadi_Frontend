@@ -12,15 +12,15 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface TaskDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSubmit: (formData: TaskFormData, taskId?: number) => Promise<void>;
   task: Task | null;
 }
 
 export function TaskDialog({
-  isOpen,
-  onClose,
+  open,
+  onOpenChange,
   onSubmit,
   task,
 }: TaskDialogProps) {
@@ -89,7 +89,7 @@ export function TaskDialog({
       toast.success(
         isEditMode ? "Task updated successfully!" : "Task created successfully!"
       );
-      onClose();
+      onOpenChange(false);
     } catch (error) {
       console.error("Error in form submission:", error);
       toast.error(error instanceof Error ? error.message : "An error occurred");
@@ -100,13 +100,13 @@ export function TaskDialog({
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {open && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-          onClick={onClose}
+          onClick={() => onOpenChange(false)}
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -123,7 +123,7 @@ export function TaskDialog({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={onClose}
+                onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
               >
                 <X className="h-4 w-4" />
@@ -198,23 +198,21 @@ export function TaskDialog({
                   }
                   disabled={isSubmitting}
                 />
-                <Label htmlFor="is_recurring">Is Recurring?</Label>
+                <Label htmlFor="is_recurring" className="cursor-pointer">
+                  Recurring task
+                </Label>
               </div>
 
-              <div className="flex justify-end gap-2 pt-4">
+              <div className="pt-4 flex justify-end space-x-2">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={onClose}
+                  onClick={() => onOpenChange(false)}
                   disabled={isSubmitting}
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="relative"
-                >
+                <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />

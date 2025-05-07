@@ -104,7 +104,7 @@ export const TaskDetailView = ({
 
       {/* Task Actions */}
       <CardFooter className="flex justify-end space-x-2 border-t pt-4">
-        {onEdit && (
+        {onEdit && !isCompleted && (
           <Button
             variant="outline"
             size="sm"
@@ -128,7 +128,7 @@ export const TaskDetailView = ({
           </Button>
         )}
 
-        {onDelete && (
+        {onDelete && !isCompleted && (
           <Button
             variant="destructive"
             size="sm"

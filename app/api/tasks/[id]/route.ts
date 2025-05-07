@@ -11,7 +11,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const taskId = parseInt(params.id, 10);
+    const { id } = await params;
+    const taskId = parseInt(id, 10);
 
     if (isNaN(taskId)) {
       return NextResponse.json(
@@ -62,7 +63,8 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const taskId = parseInt(params.id, 10);
+    const { id } = await params;
+    const taskId = parseInt(id, 10);
 
     if (isNaN(taskId)) {
       return NextResponse.json(
@@ -232,7 +234,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const taskId = parseInt(params.id, 10);
+    const { id } = await params;
+    const taskId = parseInt(id, 10);
 
     if (isNaN(taskId)) {
       return NextResponse.json(

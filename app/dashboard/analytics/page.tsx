@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useUser } from "@/lib/hooks/useUser";
 import { useRouter } from "next/navigation";
+import { useAnalytics } from "@/lib/hooks/useAnalytics";
 import {
   Select,
   SelectContent,
@@ -11,10 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  fetchAnalyticsDashboard,
-  AnalyticsDashboard,
-} from "@/app/services/analyticsService";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import ActivitySummaryCard from "./activity-summary-card";
 import ActivityDistributionCard from "./activity-distribution-card";
 import StudyTimeCard from "./study-time-card";
@@ -24,40 +23,16 @@ import RecentActivitiesCard from "./recent-activities-card";
 const AnalyticsPage = () => {
   const { user, loading: userLoading } = useUser();
   const router = useRouter();
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsDashboard | null>(
-    null
-  );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<string>("month");
 
-  // Load analytics data when user data is available or period changes
-  useEffect(() => {
-    const loadAnalyticsData = async () => {
-      if (!user?.studentId) return;
-
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await fetchAnalyticsDashboard(user.studentId, period);
-        setAnalyticsData(data);
-      } catch (err) {
-        console.error("Failed to load analytics data", err);
-        setError("Failed to load analytics data. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadAnalyticsData();
-  }, [user?.studentId, period]);
+  // Use the analytics hook instead of direct fetching
+  const { analytics, isLoading, error, fetchAnalytics } = useAnalytics(period);
 
   // Redirect to login if user is not logged in (but only after loading is complete)
-  useEffect(() => {
-    if (!userLoading && user === null) {
-      router.push("/auth");
-    }
-  }, [user, userLoading, router]);
+  if (!userLoading && user === null) {
+    router.push("/auth");
+    return null;
+  }
 
   // Show loading state while checking authentication
   if (userLoading) {
@@ -67,6 +42,13 @@ const AnalyticsPage = () => {
       </div>
     );
   }
+
+  const handlePeriodChange = (value: string) => {
+    setPeriod(value);
+    if (user?.studentId) {
+      fetchAnalytics(user.studentId, value);
+    }
+  };
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -78,7 +60,7 @@ const AnalyticsPage = () => {
           </p>
         </div>
 
-        <Select value={period} onValueChange={setPeriod}>
+        <Select value={period} onValueChange={handlePeriodChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select time period" />
           </SelectTrigger>
@@ -94,49 +76,51 @@ const AnalyticsPage = () => {
       </div>
 
       {error ? (
-        <div className="bg-destructive/10 text-destructive p-4 rounded-md">
-          {error}
-        </div>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <ActivitySummaryCard
             data={
-              analyticsData?.activity_summary || {
+              analytics?.activity_summary || {
                 total_points: 0,
                 activities_completed: 0,
                 task_completion_rate: 0,
               }
             }
-            isLoading={loading}
+            isLoading={isLoading}
           />
           <StudyTimeCard
             data={
-              analyticsData?.study_time || {
+              analytics?.study_time || {
                 total_minutes: 0,
                 session_count: 0,
                 average_duration: 0,
                 by_type: [],
               }
             }
-            isLoading={loading}
+            isLoading={isLoading}
           />
           <QuizPerformanceCard
             data={
-              analyticsData?.quiz_performance || {
+              analytics?.quiz_performance || {
                 total_attempts: 0,
                 average_score: 0,
                 quizzes_completed: 0,
               }
             }
-            isLoading={loading}
+            isLoading={isLoading}
           />
           <ActivityDistributionCard
-            data={analyticsData?.activity_distribution || []}
-            isLoading={loading}
+            data={analytics?.activity_distribution || []}
+            isLoading={isLoading}
           />
           <RecentActivitiesCard
-            data={analyticsData?.recent_activities || []}
-            isLoading={loading}
+            data={analytics?.recent_activities || []}
+            isLoading={isLoading}
           />
         </div>
       )}

@@ -244,9 +244,11 @@ export default function QuizDetailPage({ params }: QuizDetailPageProps) {
           </div>
         ) : (
           <div className="space-y-4">
-            {quiz.questions.map((question, index) =>
-              renderQuestion(question, index)
-            )}
+            {quiz.questions.map((question, index) => (
+              <div key={question.question_id || index}>
+                {renderQuestion(question, index)}
+              </div>
+            ))}
           </div>
         )}
       </div>

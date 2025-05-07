@@ -13,19 +13,20 @@ interface RouteParams {
  * Completes a quiz attempt and calculates the final score.
  */
 export async function PATCH(request: Request, { params }: RouteParams) {
-  const attemptId = parseInt(params.id, 10);
-
-  if (isNaN(attemptId)) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: { message: "Invalid attempt ID" },
-      },
-      { status: 400 }
-    );
-  }
-
   try {
+    const { id } = await params;
+    const attemptId = parseInt(id, 10);
+
+    if (isNaN(attemptId)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: "Invalid attempt ID" },
+        },
+        { status: 400 }
+      );
+    }
+
     // First, check if the attempt exists
     const checkQuery = `SELECT * FROM QuizAttempts WHERE attempt_id = @attemptId`;
     const checkParams = { attemptId };

@@ -1,57 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import {
-  fetchLeaderboard,
-  PeriodType,
-} from "@/app/services/leaderboardService";
-import { LeaderboardEntry } from "@/db/types";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import { useLeaderboard } from "@/lib/hooks/useLeaderboard";
 import { useUser } from "@/lib/hooks/useUser";
 
 const LeaderboardPage = () => {
-  const [periodType, setPeriodType] = useState<PeriodType>("Weekly");
-  const [leaderboardData, setLeaderboardData] = useState<
-    (LeaderboardEntry & { student_name: string })[]
-  >([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { user } = useUser();
-
-  useEffect(() => {
-    const loadLeaderboard = async () => {
-      setLoading(true);
-      try {
-        const response = await fetchLeaderboard(periodType);
-        if (response.success) {
-          setLeaderboardData(response.data);
-          setError(null);
-        } else {
-          setError("Failed to load leaderboard data");
-          setLeaderboardData([]);
-        }
-      } catch (err) {
-        setError("An error occurred while fetching leaderboard data");
-        console.error("Leaderboard fetch error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadLeaderboard();
-  }, [periodType]);
+  const { leaderboard, isLoading, error, periodType, setPeriodType } =
+    useLeaderboard();
 
   const handleTabChange = (value: string) => {
-    setPeriodType(value as PeriodType);
+    setPeriodType(value as "Daily" | "Weekly" | "Monthly" | "AllTime");
   };
 
   return (
     <div className="container mx-auto py-6">
       <h1 className="text-3xl font-bold mb-6">Leaderboard</h1>
 
-      <Tabs defaultValue="Weekly" onValueChange={handleTabChange}>
+      <Tabs value={periodType} onValueChange={handleTabChange}>
         <div className="flex justify-between items-center mb-6">
           <TabsList>
             <TabsTrigger value="Weekly">Weekly</TabsTrigger>
@@ -64,8 +34,8 @@ const LeaderboardPage = () => {
 
         <TabsContent value="Weekly">
           <LeaderboardTable
-            data={leaderboardData}
-            loading={loading}
+            data={leaderboard}
+            loading={isLoading}
             error={error}
             currentUserId={user?.studentId}
             periodType="Weekly"
@@ -74,8 +44,8 @@ const LeaderboardPage = () => {
 
         <TabsContent value="Monthly">
           <LeaderboardTable
-            data={leaderboardData}
-            loading={loading}
+            data={leaderboard}
+            loading={isLoading}
             error={error}
             currentUserId={user?.studentId}
             periodType="Monthly"
@@ -87,11 +57,11 @@ const LeaderboardPage = () => {
 };
 
 interface LeaderboardTableProps {
-  data: (LeaderboardEntry & { student_name: string })[];
+  data: any[];
   loading: boolean;
   error: string | null;
   currentUserId?: number;
-  periodType: PeriodType;
+  periodType: "Daily" | "Weekly" | "Monthly" | "AllTime";
 }
 
 const LeaderboardTable = ({
@@ -113,11 +83,11 @@ const LeaderboardTable = ({
 
   if (error) {
     return (
-      <Card className="p-6">
-        <div className="flex justify-center">
-          <p className="text-red-500">{error}</p>
-        </div>
-      </Card>
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     );
   }
 
@@ -144,7 +114,7 @@ const LeaderboardTable = ({
     });
   };
 
-  const getPeriodLabel = (entry: LeaderboardEntry) => {
+  const getPeriodLabel = (entry: any) => {
     const startDate = new Date(entry.start_date);
 
     if (entry.period_type === "Weekly") {
@@ -182,24 +152,24 @@ const LeaderboardTable = ({
                 }`}
               >
                 <td className="p-4">
-                  {entry.rank_position === 1 && (
+                  {entry.rank === 1 && (
                     <Badge className="bg-yellow-500 text-primary-foreground">
                       🏆 1st
                     </Badge>
                   )}
-                  {entry.rank_position === 2 && (
+                  {entry.rank === 2 && (
                     <Badge className="bg-slate-400 text-primary-foreground">
                       🥈 2nd
                     </Badge>
                   )}
-                  {entry.rank_position === 3 && (
+                  {entry.rank === 3 && (
                     <Badge className="bg-amber-600 text-primary-foreground">
                       🥉 3rd
                     </Badge>
                   )}
-                  {entry.rank_position > 3 && (
+                  {entry.rank > 3 && (
                     <span className="text-muted-foreground">
-                      {entry.rank_position}th
+                      {entry.rank}th
                     </span>
                   )}
                 </td>

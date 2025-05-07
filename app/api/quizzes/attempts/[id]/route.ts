@@ -12,19 +12,20 @@ interface RouteParams {
  * Fetches details of a quiz attempt including questions and answers.
  */
 export async function GET(request: Request, { params }: RouteParams) {
-  const attemptId = parseInt(params.id, 10);
-
-  if (isNaN(attemptId)) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: { message: "Invalid attempt ID" },
-      },
-      { status: 400 }
-    );
-  }
-
   try {
+    const { id } = await params;
+    const attemptId = parseInt(id, 10);
+
+    if (isNaN(attemptId)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: "Invalid attempt ID" },
+        },
+        { status: 400 }
+      );
+    }
+
     // Get the attempt details
     const attemptQuery = `
       SELECT * FROM QuizAttempts 

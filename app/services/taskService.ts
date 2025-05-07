@@ -1,5 +1,6 @@
 import { Task } from "@/db/types";
 import { TaskFormData } from "../dashboard/tasks/edit-task-form";
+import { api } from "@/lib/api";
 
 /**
  * Fetches tasks for a specific student
@@ -11,48 +12,38 @@ export const fetchTasks = async (
     return [];
   }
 
-  const response = await fetch(`/api/tasks?student_id=${studentId}`);
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(
-      errorData?.error?.message ||
-        `Failed to fetch tasks: ${response.statusText}`
-    );
+  try {
+    return await api.get<Task[]>("/api/tasks", {
+      student_id: studentId.toString(),
+    });
+  } catch (error) {
+    console.error("Failed to fetch tasks:", error);
+    throw error;
   }
+};
 
-  const result = await response.json();
-
-  if (result.success && result.data) {
-    return result.data;
-  } else {
-    throw new Error(result.error?.message || "Failed to fetch tasks");
+/**
+ * Fetches a single task by ID
+ */
+export const fetchTask = async (taskId: number): Promise<Task> => {
+  try {
+    return await api.get<Task>(`/api/tasks/${taskId}`);
+  } catch (error) {
+    console.error(`Failed to fetch task ${taskId}:`, error);
+    throw error;
   }
 };
 
 /**
  * Creates a new task
  */
-export const createTask = async (
-  payload: TaskFormData & { student_id?: number }
-): Promise<Task> => {
-  const response = await fetch("/api/tasks", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const result = await response.json();
-
-  if (!response.ok || !result.success) {
-    throw new Error(
-      result.error?.message || `Failed to create task: ${response.statusText}`
-    );
+export const createTask = async (data: TaskFormData & { student_id?: number }): Promise<Task> => {
+  try {
+    return await api.post<Task>("/api/tasks", data);
+  } catch (error) {
+    console.error("Failed to create task:", error);
+    throw error;
   }
-
-  return result.data!;
 };
 
 /**
@@ -67,45 +58,24 @@ export type TaskUpdatePayload = Partial<TaskFormData> & {
  */
 export const updateTask = async (
   taskId: number,
-  payload: TaskUpdatePayload
+  data: Partial<TaskFormData>
 ): Promise<Task> => {
-  const response = await fetch(`/api/tasks/${taskId}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const result = await response.json();
-
-  if (!response.ok || !result.success) {
-    throw new Error(
-      result.error?.message || `Failed to update task: ${response.statusText}`
-    );
+  try {
+    return await api.patch<Task>(`/api/tasks/${taskId}`, data);
+  } catch (error) {
+    console.error(`Failed to update task ${taskId}:`, error);
+    throw error;
   }
-
-  return result.data!;
 };
 
 /**
- * Deletes a task by ID
+ * Deletes a task
  */
-export const deleteTask = async (taskId: number): Promise<Task> => {
-  const response = await fetch(`/api/tasks/${taskId}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  const result = await response.json();
-
-  if (!response.ok || !result.success) {
-    throw new Error(
-      result.error?.message || `Failed to delete task: ${response.statusText}`
-    );
+export const deleteTask = async (taskId: number): Promise<void> => {
+  try {
+    await api.delete(`/api/tasks/${taskId}`);
+  } catch (error) {
+    console.error(`Failed to delete task ${taskId}:`, error);
+    throw error;
   }
-
-  return result.data!;
 };

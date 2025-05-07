@@ -27,7 +27,8 @@ export async function GET(
       );
     }
 
-    const flashcardId = parseInt(params.id);
+    const { id } = await params;
+    const flashcardId = parseInt(id);
 
     if (isNaN(flashcardId)) {
       return NextResponse.json<ErrorResponse>(
@@ -100,7 +101,8 @@ export async function PATCH(
       );
     }
 
-    const flashcardId = parseInt(params.id);
+    const { id } = await params;
+    const flashcardId = parseInt(id);
 
     if (isNaN(flashcardId)) {
       return NextResponse.json<ErrorResponse>(
@@ -242,7 +244,8 @@ export async function DELETE(
       );
     }
 
-    const flashcardId = parseInt(params.id);
+    const { id } = await params;
+    const flashcardId = parseInt(id);
 
     if (isNaN(flashcardId)) {
       return NextResponse.json<ErrorResponse>(

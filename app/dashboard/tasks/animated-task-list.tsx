@@ -78,12 +78,14 @@ type TaskProcessingState = {
 interface AnimatedTaskListProps {
   tasks: Task[];
   isLoading: boolean;
-  studentId: number | undefined;
-  onEdit: (task: Task) => void;
+  studentId?: number;
+  onEdit?: (task: Task) => void;
   onComplete?: (taskId: number) => void;
   onDelete?: (taskId: number) => void;
   processingTaskIds?: TaskProcessingState;
-  onViewDetails?: (task: Task) => void; // New prop for viewing task details
+  onTaskClick?: (task: Task) => void;
+  isProcessingTask?: (taskId: number, operation: OperationType) => boolean;
+  emptyMessage?: string;
 }
 
 export const AnimatedTaskList = ({
@@ -94,24 +96,19 @@ export const AnimatedTaskList = ({
   onComplete,
   onDelete,
   processingTaskIds = {},
-  onViewDetails, // New prop
+  onTaskClick,
+  isProcessingTask = () => false,
+  emptyMessage = "No tasks found",
 }: AnimatedTaskListProps) => {
   // Helper function to check if a task has a specific operation in progress
-  const isTaskProcessing = (taskId: number, operation?: OperationType) => {
-    const taskState = processingTaskIds[taskId];
-    if (!taskState) return false;
-
-    // If operation is specified, check only that operation
-    if (operation) return !!taskState[operation];
-
-    // Otherwise, check if any operation is in progress for this task
-    return Object.values(taskState).some((isProcessing) => isProcessing);
+  const isTaskProcessing = (taskId: number, operation: OperationType) => {
+    return isProcessingTask(taskId, operation);
   };
 
   // Handle button clicks with stopPropagation to prevent opening task detail view
   const handleEditClick = (e: React.MouseEvent, task: Task) => {
     e.stopPropagation();
-    onEdit(task);
+    onEdit?.(task);
   };
 
   const handleCompleteClick = (e: React.MouseEvent, taskId: number) => {
@@ -141,11 +138,9 @@ export const AnimatedTaskList = ({
         transition={{ duration: 0.5 }}
         className="text-center py-12 bg-muted/30 rounded-lg border border-dashed"
       >
-        <h3 className="font-medium text-lg mb-2">No tasks found</h3>
+        <h3 className="font-medium text-lg mb-2">Task List</h3>
         <p className="text-muted-foreground mb-4">
-          {studentId
-            ? "You haven't created any tasks yet. Create your first task to get started!"
-            : "No tasks available. Please sign in to see your tasks."}
+          {emptyMessage}
         </p>
       </motion.div>
     );
@@ -195,14 +190,14 @@ export const AnimatedTaskList = ({
                 overflow-hidden transition-all 
                 ${isCompleted ? "opacity-60" : ""}
                 hover:shadow-md border-l-4
-                ${onViewDetails ? "cursor-pointer" : ""}
+                ${onTaskClick ? "cursor-pointer" : ""}
               `}
                 style={{
                   borderLeftColor: task.priority
                     ? getPriorityBorderColor(task.priority)
                     : "transparent",
                 }}
-                onClick={onViewDetails ? () => onViewDetails(task) : undefined}
+                onClick={onTaskClick ? () => onTaskClick(task) : undefined}
               >
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
@@ -263,17 +258,17 @@ export const AnimatedTaskList = ({
                 )}
 
                 <CardFooter className="flex justify-end gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => handleEditClick(e, task)}
-                    disabled={
-                      isTaskProcessing(task.task_id, "editing") || isCompleted
-                    }
-                  >
-                    <Edit2 className="h-3 w-3 mr-1" />
-                    Edit
-                  </Button>
+                  {onEdit && !isCompleted && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => handleEditClick(e, task)}
+                      disabled={isTaskProcessing(task.task_id, "editing")}
+                    >
+                      <Edit2 className="h-3 w-3 mr-1" />
+                      Edit
+                    </Button>
+                  )}
 
                   {onComplete && !task.completed_at && (
                     <Button
@@ -291,7 +286,7 @@ export const AnimatedTaskList = ({
                     </Button>
                   )}
 
-                  {onDelete && (
+                  {onDelete && !isCompleted && (
                     <Button
                       variant="destructive"
                       size="sm"

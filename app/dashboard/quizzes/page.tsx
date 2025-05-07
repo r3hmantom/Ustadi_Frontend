@@ -1,62 +1,49 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useUser } from "@/lib/hooks/useUser";
+import { useQuiz } from "@/lib/hooks/useQuiz";
+import { useAsyncAction } from "@/lib/hooks/useAsyncAction";
 import { Plus, Pencil, Trash2, Eye, FileQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { fetchQuizzes, deleteQuiz } from "@/app/services/quizService";
-import { Quiz } from "@/db/types";
-import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from "next/link";
 import { CreateQuizDialog } from "./create-quiz-dialog";
 
 const QuizzesPage = () => {
   const { user } = useUser();
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { quizzes, isLoading, error, deleteQuiz, fetchQuizzes } = useQuiz();
+
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  // Load quizzes created by the current user
-  useEffect(() => {
-    const loadQuizzes = async () => {
-      if (!user?.studentId) return;
-
-      setIsLoading(true);
-
-      try {
-        const data = await fetchQuizzes(user.studentId);
-        setQuizzes(data);
-      } catch (error) {
-        console.error("Failed to fetch quizzes:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadQuizzes();
-  }, [user?.studentId]);
-
-  const handleDeleteQuiz = async (quizId: number) => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete this quiz? This action cannot be undone."
-      )
-    ) {
-      try {
+  // Use async action for deleting quizzes
+  const {
+    execute: handleDeleteQuiz,
+    isLoading: isDeleting,
+    error: deleteError,
+  } = useAsyncAction(
+    async (quizId: number) => {
+      if (
+        window.confirm(
+          "Are you sure you want to delete this quiz? This action cannot be undone."
+        )
+      ) {
         await deleteQuiz(quizId);
-        setQuizzes(quizzes.filter((quiz) => quiz.quiz_id !== quizId));
-        toast.success("Quiz deleted successfully");
-      } catch (error) {
-        console.error("Failed to delete quiz:", error);
       }
+    },
+    {
+      successMessage: "Quiz deleted successfully",
+      errorMessage: "Failed to delete quiz",
     }
-  };
+  );
 
-  const handleQuizCreated = (newQuiz: Quiz) => {
-    setQuizzes([newQuiz, ...quizzes]);
+  const handleQuizCreated = (newQuiz: any) => {
+    // After a quiz is created, refresh the list
+    if (user?.studentId) {
+      fetchQuizzes(user.studentId);
+    }
     setShowCreateDialog(false);
-    toast.success("Quiz created successfully");
   };
 
   if (isLoading) {
@@ -64,6 +51,15 @@ const QuizzesPage = () => {
       <div className="flex justify-center items-center min-h-[50vh]">
         <div className="text-muted-foreground">Loading quizzes...</div>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     );
   }
 
@@ -80,6 +76,13 @@ const QuizzesPage = () => {
           <Plus className="h-4 w-4 mr-2" /> New Quiz
         </Button>
       </div>
+
+      {deleteError && (
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{deleteError}</AlertDescription>
+        </Alert>
+      )}
 
       <CreateQuizDialog
         open={showCreateDialog}
@@ -102,7 +105,7 @@ const QuizzesPage = () => {
           </div>
         ) : (
           quizzes.map((quiz) => (
-            <Card key={quiz.quiz_id} className="p-4 flex flex-col">
+            <Card key={quiz.id} className="p-4 flex flex-col">
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="font-semibold text-lg">{quiz.title}</h3>
@@ -123,12 +126,12 @@ const QuizzesPage = () => {
 
               <div className="mt-auto flex gap-2">
                 <Button variant="outline" size="sm" asChild>
-                  <Link href={`/dashboard/quizzes/${quiz.quiz_id}`}>
+                  <Link href={`/dashboard/quizzes/${quiz.id}`}>
                     <Eye className="h-4 w-4 mr-1" /> View
                   </Link>
                 </Button>
                 <Button variant="outline" size="sm" asChild>
-                  <Link href={`/dashboard/quizzes/${quiz.quiz_id}/edit`}>
+                  <Link href={`/dashboard/quizzes/${quiz.id}/edit`}>
                     <Pencil className="h-4 w-4 mr-1" /> Edit
                   </Link>
                 </Button>
@@ -136,7 +139,8 @@ const QuizzesPage = () => {
                   variant="outline"
                   size="sm"
                   className="text-destructive hover:text-destructive"
-                  onClick={() => handleDeleteQuiz(quiz.quiz_id)}
+                  onClick={() => handleDeleteQuiz(quiz.id)}
+                  disabled={isDeleting}
                 >
                   <Trash2 className="h-4 w-4 mr-1" /> Delete
                 </Button>

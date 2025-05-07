@@ -26,7 +26,8 @@ export async function GET(
       );
     }
 
-    const sessionId = parseInt(params.id);
+    const { id } = await params;
+    const sessionId = parseInt(id);
 
     if (isNaN(sessionId)) {
       return NextResponse.json<ErrorResponse>(
@@ -119,7 +120,8 @@ export async function PATCH(
       );
     }
 
-    const sessionId = parseInt(params.id);
+    const { id } = await params;
+    const sessionId = parseInt(id);
 
     if (isNaN(sessionId)) {
       return NextResponse.json<ErrorResponse>(
@@ -308,7 +310,8 @@ export async function DELETE(
       );
     }
 
-    const sessionId = parseInt((await params).id);
+    const { id } = await params;
+    const sessionId = parseInt(id);
 
     if (isNaN(sessionId)) {
       return NextResponse.json<ErrorResponse>(

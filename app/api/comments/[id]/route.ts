@@ -10,7 +10,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const commentId = parseInt(params.id, 10);
+    const { id } = await params;
+    const commentId = parseInt(id, 10);
 
     if (isNaN(commentId)) {
       return NextResponse.json(

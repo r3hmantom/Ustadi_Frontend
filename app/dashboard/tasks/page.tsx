@@ -1,70 +1,43 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  fetchTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-} from "@/app/services/taskService";
 import { TaskFormData } from "./edit-task-form";
 import { AnimatedTaskList } from "./animated-task-list";
 import { TaskDialog } from "./task-dialog";
 import { TaskDetailView } from "./task-detail-view";
-import useUser from "@/lib/hooks/useUser";
-import { Task } from "@/db/types";
+import useTask from "@/lib/hooks/useTask";
+import { useUserStore } from "@/lib/stores/useUserStore";
 
 const TasksPage = () => {
-  // State
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("active");
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  // State from task store
+  const {
+    activeTasks,
+    completedTasks,
+    isLoading,
+    error,
+    selectedTask,
+    createTask,
+    updateTask,
+    deleteTask,
+    setSelectedTask,
+    isOperationInProgress,
+    fetchTasks,
+  } = useTask();
 
-  // Replace simple Set with an object that tracks operation types
-  type OperationType = "deleting" | "editing" | "completing";
-  type TaskProcessingState = {
-    [taskId: number]: {
-      [operation in OperationType]?: boolean;
-    };
-  };
-
-  const [taskProcessingState, setTaskProcessingState] =
-    useState<TaskProcessingState>({});
-
-  // Get current user context
-  const { user } = useUser();
+  // Get current user for fetching tasks
+  const { user } = useUserStore();
   const studentId = user?.studentId;
 
-  // Fetch tasks on component mount
-  const loadTasks = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const taskData = await fetchTasks(studentId);
-      setTasks(taskData);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
-      console.error("Fetch tasks error:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [studentId]);
-
-  useEffect(() => {
-    loadTasks();
-  }, [loadTasks]);
+  // Local UI state
+  const [editingTask, setEditingTask] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("active");
 
   // Handle opening the create task dialog
   const handleCreateTask = () => {
@@ -73,14 +46,14 @@ const TasksPage = () => {
   };
 
   // Handle editing a task
-  const handleEditTask = (task: Task) => {
+  const handleEditTask = (task) => {
     setEditingTask(task);
     setIsDialogOpen(true);
     setSelectedTask(null); // Close task detail view when editing
   };
 
   // Handle viewing task details
-  const handleViewTaskDetails = (task: Task) => {
+  const handleViewTaskDetails = (task) => {
     setSelectedTask(task);
   };
 
@@ -91,137 +64,62 @@ const TasksPage = () => {
 
   // Handle task creation and updating
   const handleTaskSubmit = async (formData: TaskFormData, taskId?: number) => {
-    setError(null);
-
     try {
       if (taskId) {
         // This is an update
-        const updatedTask = await updateTask(taskId, formData);
-
-        // Update the task in the list
-        setTasks((prevTasks) =>
-          prevTasks.map((task) =>
-            task.task_id === taskId ? updatedTask : task
-          )
-        );
-
-        // If this is the currently selected task, update it
-        if (selectedTask?.task_id === taskId) {
-          setSelectedTask(updatedTask);
-        }
+        await updateTask(taskId, formData);
+        toast.success("Task updated successfully!");
       } else {
         // This is a create
-        const payload = {
-          ...formData,
-          student_id: studentId,
-        };
-
-        // Create the task
-        const newTask = await createTask(payload);
-
-        // Add the new task to the list
-        setTasks((prevTasks) => [newTask, ...prevTasks]);
+        await createTask(formData);
+        toast.success("Task created successfully!");
       }
-
-      toast.success("Task saved successfully!");
+      setIsDialogOpen(false);
+      
+      // Refresh tasks data
+      if (studentId) {
+        await fetchTasks(studentId);
+      }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
       console.error("Task operation error:", err);
-      throw err;
+      toast.error("Failed to save task");
     }
   };
 
   // Handle marking a task as completed
   const handleCompleteTask = async (taskId: number) => {
-    setError(null);
-    // Add to processing tasks
-    setTaskProcessingState((prev) => ({
-      ...prev,
-      [taskId]: { ...prev[taskId], completing: true },
-    }));
-
     try {
-      // Update the task with completed_at timestamp
-      const updatedTask = await updateTask(taskId, {
+      await updateTask(taskId, {
         completed_at: new Date().toISOString(),
       });
 
-      // Update the task in the list
-      setTasks((prevTasks) =>
-        prevTasks.map((task) => (task.task_id === taskId ? updatedTask : task))
-      );
-
-      // If this is the currently selected task, update it
-      if (selectedTask?.task_id === taskId) {
-        setSelectedTask(updatedTask);
-      }
-
       toast.success("Task marked as completed!");
+      
+      // Refresh tasks data
+      if (studentId) {
+        await fetchTasks(studentId);
+      }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
       console.error("Complete task error:", err);
       toast.error("Failed to complete task");
-    } finally {
-      // Remove from processing tasks
-      setTaskProcessingState((prev) => {
-        const { [taskId]: taskState, ...rest } = prev;
-        return {
-          ...rest,
-          [taskId]: { ...taskState, completing: false },
-        };
-      });
     }
   };
 
   // Handle deleting a task
   const handleDeleteTask = async (taskId: number) => {
-    setError(null);
-    // Add to processing tasks
-    setTaskProcessingState((prev) => ({
-      ...prev,
-      [taskId]: { ...prev[taskId], deleting: true },
-    }));
-
     try {
-      // Call the API to delete the task
       await deleteTask(taskId);
-
-      // Remove the task from the UI after successful deletion
-      setTasks((prevTasks) =>
-        prevTasks.filter((task) => task.task_id !== taskId)
-      );
-
-      // If this is the currently selected task, close the detail view
-      if (selectedTask?.task_id === taskId) {
-        setSelectedTask(null);
-      }
-
       toast.success("Task deleted successfully!");
+      
+      // Refresh tasks data
+      if (studentId) {
+        await fetchTasks(studentId);
+      }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
       console.error("Delete task error:", err);
       toast.error("Failed to delete task");
-    } finally {
-      // Remove from processing tasks
-      setTaskProcessingState((prev) => {
-        const { [taskId]: taskState, ...rest } = prev;
-        return {
-          ...rest,
-          [taskId]: { ...taskState, deleting: false },
-        };
-      });
     }
   };
-
-  // Filter tasks based on active tab
-  const activeTasks = tasks.filter((task) => !task.completed_at);
-  const completedTasks = tasks.filter((task) => !!task.completed_at);
 
   return (
     <div className="container mx-auto p-4 space-y-6 max-w-4xl">
@@ -240,42 +138,27 @@ const TasksPage = () => {
 
           <TaskDetailView
             task={selectedTask}
-            studentId={studentId}
             onEdit={handleEditTask}
             onComplete={handleCompleteTask}
             onDelete={handleDeleteTask}
             isProcessing={{
-              editing: taskProcessingState[selectedTask.task_id]?.editing,
-              completing: taskProcessingState[selectedTask.task_id]?.completing,
-              deleting: taskProcessingState[selectedTask.task_id]?.deleting,
+              editing: isOperationInProgress(selectedTask.id, "editing"),
+              completing: isOperationInProgress(selectedTask.id, "completing"),
+              deleting: isOperationInProgress(selectedTask.id, "deleting"),
             }}
           />
         </div>
       ) : (
-        <>
+        <div className="space-y-6">
+          {/* Header with title and create task button */}
           <div className="flex justify-between items-center">
-            <motion.h1
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-2xl font-bold"
-            >
-              My Tasks
-            </motion.h1>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button onClick={handleCreateTask} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Create Task
-              </Button>
-            </motion.div>
+            <h1 className="text-2xl font-bold">Tasks</h1>
+            <Button onClick={handleCreateTask} className="gap-2">
+              <Plus className="h-4 w-4" /> Add Task
+            </Button>
           </div>
 
-          {/* Error Display */}
+          {/* Error alert */}
           {error && (
             <Alert variant="destructive">
               <AlertTitle>Error</AlertTitle>
@@ -283,66 +166,58 @@ const TasksPage = () => {
             </Alert>
           )}
 
-          {/* Task Tabs */}
+          {/* Task tab navigation */}
           <Tabs
-            defaultValue="active"
             value={activeTab}
             onValueChange={setActiveTab}
-            className="w-full"
+            className="space-y-4"
           >
-            <TabsList className="w-full mb-6">
-              <TabsTrigger value="active" className="flex-1">
-                Active Tasks
-                {activeTasks.length > 0 && (
-                  <span className="ml-2 text-xs py-0.5 px-2 rounded-full bg-primary/20">
-                    {activeTasks.length}
-                  </span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="completed" className="flex-1">
-                Completed Tasks
-                {completedTasks.length > 0 && (
-                  <span className="ml-2 text-xs py-0.5 px-2 rounded-full bg-primary/20">
-                    {completedTasks.length}
-                  </span>
-                )}
-              </TabsTrigger>
+            <TabsList className="grid grid-cols-2 w-full max-w-md">
+              <TabsTrigger value="active">Active Tasks</TabsTrigger>
+              <TabsTrigger value="completed">Completed Tasks</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="active" className="mt-2">
+            {/* Active tasks */}
+            <TabsContent value="active" className="space-y-4">
               <AnimatedTaskList
                 tasks={activeTasks}
                 isLoading={isLoading}
-                studentId={studentId}
+                onTaskClick={handleViewTaskDetails}
                 onEdit={handleEditTask}
                 onComplete={handleCompleteTask}
                 onDelete={handleDeleteTask}
-                processingTaskIds={taskProcessingState}
-                onViewDetails={handleViewTaskDetails}
+                isProcessingTask={(taskId, operation) =>
+                  isOperationInProgress(taskId, operation)
+                }
+                emptyMessage="No active tasks. Click 'Add Task' to create one."
               />
             </TabsContent>
 
-            <TabsContent value="completed" className="mt-2">
+            {/* Completed tasks */}
+            <TabsContent value="completed" className="space-y-4">
               <AnimatedTaskList
                 tasks={completedTasks}
                 isLoading={isLoading}
-                studentId={studentId}
+                onTaskClick={handleViewTaskDetails}
                 onEdit={handleEditTask}
+                onComplete={handleCompleteTask}
                 onDelete={handleDeleteTask}
-                processingTaskIds={taskProcessingState}
-                onViewDetails={handleViewTaskDetails}
+                isProcessingTask={(taskId, operation) =>
+                  isOperationInProgress(taskId, operation)
+                }
+                emptyMessage="No completed tasks yet."
               />
             </TabsContent>
           </Tabs>
-        </>
+        </div>
       )}
 
-      {/* Task Dialog for Create/Edit */}
+      {/* Create/Edit Task Dialog */}
       <TaskDialog
-        isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        onSubmit={handleTaskSubmit}
         task={editingTask}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onSubmit={handleTaskSubmit}
       />
     </div>
   );

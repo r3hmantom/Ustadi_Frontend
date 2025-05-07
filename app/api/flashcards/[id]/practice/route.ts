@@ -28,7 +28,8 @@ export async function POST(
       );
     }
 
-    const flashcardId = parseInt(params.id);
+    const { id } = await params;
+    const flashcardId = parseInt(id);
 
     if (isNaN(flashcardId)) {
       return NextResponse.json<ErrorResponse>(
