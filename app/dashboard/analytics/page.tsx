@@ -13,13 +13,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ChartPieIcon } from "lucide-react";
 import ActivitySummaryCard from "./activity-summary-card";
 import ActivityDistributionCard from "./activity-distribution-card";
 import StudyTimeCard from "./study-time-card";
 import QuizPerformanceCard from "./quiz-performance-card";
 import RecentActivitiesCard from "./recent-activities-card";
 import { Loader } from "@/components/ui/loader";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const AnalyticsPage = () => {
   const { user, loading: userLoading } = useUser();
@@ -61,19 +63,28 @@ const AnalyticsPage = () => {
           </p>
         </div>
 
-        <Select value={period} onValueChange={handlePeriodChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select time period" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="week">Last 7 days</SelectItem>
-              <SelectItem value="month">Last 30 days</SelectItem>
-              <SelectItem value="year">Last year</SelectItem>
-              <SelectItem value="all">All time</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-3">
+          <Link href="/dashboard/analytics/study-stats">
+            <Button variant="outline" className="flex items-center gap-2">
+              <ChartPieIcon className="w-4 h-4" />
+              Detailed Study Statistics
+            </Button>
+          </Link>
+          
+          <Select value={period} onValueChange={handlePeriodChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select time period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="week">Last 7 days</SelectItem>
+                <SelectItem value="month">Last 30 days</SelectItem>
+                <SelectItem value="year">Last year</SelectItem>
+                <SelectItem value="all">All time</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {error ? (

@@ -71,12 +71,12 @@ export const SignIn = ({ onSwitchToSignUp }: SignInProps) => {
       <CardHeader>
         <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
       </CardHeader>
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          {error}
+        </Alert>
+      )}
       <CardContent>
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            {error}
-          </Alert>
-        )}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
