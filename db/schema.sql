@@ -25,28 +25,7 @@ CREATE TABLE Tasks
     completed_at DATETIME,
     is_recurring BIT DEFAULT 0
 );
-GO
-CREATE TABLE TaskTags
-(
-    tag_id INT PRIMARY KEY IDENTITY(1,1),
-    tag_name NVARCHAR(50) UNIQUE NOT NULL
-);
-GO
-CREATE TABLE TaskTagMapping
-(
-    task_id INT FOREIGN KEY REFERENCES Tasks(task_id),
-    tag_id INT FOREIGN KEY REFERENCES TaskTags(tag_id),
-    PRIMARY KEY (task_id, tag_id)
-);
-GO
-CREATE TABLE Attachments
-(
-    attachment_id INT PRIMARY KEY IDENTITY(1,1),
-    task_id INT FOREIGN KEY REFERENCES Tasks(task_id),
-    file_name NVARCHAR(255) NOT NULL,
-    file_path NVARCHAR(MAX) NOT NULL,
-    uploaded_at DATETIME DEFAULT GETDATE()
-);
+
 GO
 CREATE TABLE StudySessions
 (
@@ -124,24 +103,6 @@ CREATE TABLE QuizAnswers
     selected_option CHAR(1) CHECK (selected_option IN ('a', 'b', 'c', 'd')),
     is_correct BIT NOT NULL,
     CONSTRAINT UQ_AttemptQuestion UNIQUE (attempt_id, question_id)
-);
-GO
-CREATE TABLE Groups
-(
-    group_id INT PRIMARY KEY IDENTITY(1,1),
-    group_name NVARCHAR(255) NOT NULL,
-    created_by INT FOREIGN KEY REFERENCES Students(student_id),
-    created_at DATETIME DEFAULT GETDATE(),
-    is_active BIT DEFAULT 1
-);
-GO
-CREATE TABLE GroupMembers
-(
-    group_id INT FOREIGN KEY REFERENCES Groups(group_id),
-    student_id INT FOREIGN KEY REFERENCES Students(student_id),
-    joined_at DATETIME DEFAULT GETDATE(),
-    role NVARCHAR(50) CHECK (role IN ('Member', 'Leader')),
-    PRIMARY KEY (group_id, student_id)
 );
 GO
 CREATE TABLE Leaderboard
