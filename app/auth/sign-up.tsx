@@ -52,9 +52,7 @@ export const SignUp = ({ onSwitchToSignIn }: SignUpProps) => {
       }
 
       // Show success toast notification
-      toast.success(
-        "Account created successfully! Redirecting to dashboard..."
-      );
+      toast.success("Account created successfully! Log in");
 
       // Redirect to dashboard or login page after successful registration
       router.push("/dashboard");

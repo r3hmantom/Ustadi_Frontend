@@ -5,6 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Card,
   CardHeader,
   CardTitle,
@@ -12,7 +21,7 @@ import {
   CardFooter,
   CardDescription,
 } from "@/components/ui/card";
-import { TaskFormData } from "./edit-task-form";
+import { TaskFormData, RECURRENCE_PATTERNS } from "./edit-task-form";
 
 interface CreateTaskFormProps {
   onSubmit: (formData: TaskFormData) => Promise<void>;
@@ -25,6 +34,7 @@ export const CreateTaskForm = ({ onSubmit }: CreateTaskFormProps) => {
     due_date: "",
     priority: 3, // Default priority
     is_recurring: false,
+    recurrence_pattern: RECURRENCE_PATTERNS.WEEKLY, // Default recurrence pattern
   });
 
   const handleInputChange = (
@@ -42,6 +52,13 @@ export const CreateTaskForm = ({ onSubmit }: CreateTaskFormProps) => {
     }));
   };
 
+  const handleRecurrencePatternChange = (value: string) => {
+    setFormState((prevState) => ({
+      ...prevState,
+      recurrence_pattern: value,
+    }));
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -50,8 +67,14 @@ export const CreateTaskForm = ({ onSubmit }: CreateTaskFormProps) => {
       return; // Don't submit if title is empty
     }
 
+    // If not recurring, remove the pattern before submitting
+    const dataToSubmit = { ...formState };
+    if (!dataToSubmit.is_recurring) {
+      delete dataToSubmit.recurrence_pattern;
+    }
+
     try {
-      await onSubmit(formState);
+      await onSubmit(dataToSubmit);
 
       // Reset form after successful submission
       setFormState({
@@ -60,6 +83,7 @@ export const CreateTaskForm = ({ onSubmit }: CreateTaskFormProps) => {
         due_date: "",
         priority: 3,
         is_recurring: false,
+        recurrence_pattern: RECURRENCE_PATTERNS.WEEKLY,
       });
     } catch (error) {
       // Error handling is done by the parent component
@@ -136,7 +160,30 @@ export const CreateTaskForm = ({ onSubmit }: CreateTaskFormProps) => {
             />
             <Label htmlFor="is_recurring">Is Recurring?</Label>
           </div>
-          {/* Add inputs for recurrence_pattern, parent_task_id if needed */}
+          
+          {formState.is_recurring && (
+            <div className="space-y-2">
+              <Label htmlFor="recurrence_pattern">Recurrence Pattern</Label>
+              <Select
+                value={formState.recurrence_pattern}
+                onValueChange={handleRecurrencePatternChange}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a recurrence pattern" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Recurrence</SelectLabel>
+                    <SelectItem value={RECURRENCE_PATTERNS.DAILY}>Daily</SelectItem>
+                    <SelectItem value={RECURRENCE_PATTERNS.WEEKLY}>Weekly</SelectItem>
+                    <SelectItem value={RECURRENCE_PATTERNS.BIWEEKLY}>Bi-weekly</SelectItem>
+                    <SelectItem value={RECURRENCE_PATTERNS.MONTHLY}>Monthly</SelectItem>
+                    <SelectItem value={RECURRENCE_PATTERNS.CUSTOM}>Custom</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </CardContent>
         <CardFooter>
           <Button type="submit">Add Task</Button>

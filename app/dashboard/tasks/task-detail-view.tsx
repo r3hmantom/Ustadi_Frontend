@@ -7,6 +7,7 @@ import {
   CheckCircle,
   Edit2,
   Trash2,
+  RepeatIcon,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Task } from "@/db/types";
@@ -35,6 +36,24 @@ interface TaskDetailViewProps {
     deleting?: boolean;
   };
 }
+
+// Helper function to format recurrence pattern for display
+const formatRecurrencePattern = (pattern: string): string => {
+  switch (pattern) {
+    case 'daily':
+      return 'Daily';
+    case 'weekly':
+      return 'Weekly';
+    case 'biweekly':
+      return 'Bi-weekly';
+    case 'monthly':
+      return 'Monthly';
+    case 'custom':
+      return 'Custom';
+    default:
+      return pattern.charAt(0).toUpperCase() + pattern.slice(1);
+  }
+};
 
 export const TaskDetailView = ({
   task,
@@ -88,8 +107,10 @@ export const TaskDetailView = ({
 
           {task.is_recurring && (
             <div className="flex items-center text-xs">
-              <Star className="h-3 w-3 mr-1" />
-              <span>Recurring Task</span>
+              <RepeatIcon className="h-3 w-3 mr-1" />
+              <span>
+                Recurring: {task.recurrence_pattern ? formatRecurrencePattern(task.recurrence_pattern) : 'Weekly'}
+              </span>
             </div>
           )}
         </CardDescription>

@@ -5,6 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Card,
   CardHeader,
   CardTitle,
@@ -21,6 +30,7 @@ export interface TaskFormData {
   due_date: string;
   priority: number;
   is_recurring: boolean;
+  recurrence_pattern?: string;
 }
 
 interface EditTaskFormProps {
@@ -28,6 +38,15 @@ interface EditTaskFormProps {
   onCancel?: () => void;
   task: Task | null;
 }
+
+// Recurrence pattern options
+export const RECURRENCE_PATTERNS = {
+  DAILY: "daily",
+  WEEKLY: "weekly",
+  BIWEEKLY: "biweekly",
+  MONTHLY: "monthly",
+  CUSTOM: "custom",
+};
 
 export const EditTaskForm = ({
   onSubmit,
@@ -42,6 +61,7 @@ export const EditTaskForm = ({
     due_date: "",
     priority: 3, // Default priority
     is_recurring: false,
+    recurrence_pattern: RECURRENCE_PATTERNS.WEEKLY, // Default recurrence pattern
   });
 
   // When the task prop changes, update the form state
@@ -55,6 +75,7 @@ export const EditTaskForm = ({
           : "", // Convert to YYYY-MM-DD
         priority: task.priority || 3,
         is_recurring: Boolean(task.is_recurring),
+        recurrence_pattern: task.recurrence_pattern || RECURRENCE_PATTERNS.WEEKLY,
       });
     }
   }, [task]);
@@ -74,6 +95,13 @@ export const EditTaskForm = ({
     }));
   };
 
+  const handleRecurrencePatternChange = (value: string) => {
+    setFormState((prevState) => ({
+      ...prevState,
+      recurrence_pattern: value,
+    }));
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -82,8 +110,14 @@ export const EditTaskForm = ({
       return; // Don't submit if title is empty
     }
 
+    // If not recurring, remove the pattern before submitting
+    const dataToSubmit = { ...formState };
+    if (!dataToSubmit.is_recurring) {
+      delete dataToSubmit.recurrence_pattern;
+    }
+
     try {
-      await onSubmit(formState, task?.task_id);
+      await onSubmit(dataToSubmit, task?.task_id);
 
       if (!isEditMode) {
         // Reset form after successful submission only if creating a new task
@@ -93,6 +127,7 @@ export const EditTaskForm = ({
           due_date: "",
           priority: 3,
           is_recurring: false,
+          recurrence_pattern: RECURRENCE_PATTERNS.WEEKLY,
         });
       }
     } catch (error) {
@@ -171,6 +206,30 @@ export const EditTaskForm = ({
             />
             <Label htmlFor="is_recurring">Is Recurring?</Label>
           </div>
+          
+          {formState.is_recurring && (
+            <div className="space-y-2">
+              <Label htmlFor="recurrence_pattern">Recurrence Pattern</Label>
+              <Select
+                value={formState.recurrence_pattern}
+                onValueChange={handleRecurrencePatternChange}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a recurrence pattern" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Recurrence</SelectLabel>
+                    <SelectItem value={RECURRENCE_PATTERNS.DAILY}>Daily</SelectItem>
+                    <SelectItem value={RECURRENCE_PATTERNS.WEEKLY}>Weekly</SelectItem>
+                    <SelectItem value={RECURRENCE_PATTERNS.BIWEEKLY}>Bi-weekly</SelectItem>
+                    <SelectItem value={RECURRENCE_PATTERNS.MONTHLY}>Monthly</SelectItem>
+                    <SelectItem value={RECURRENCE_PATTERNS.CUSTOM}>Custom</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between">
           {isEditMode && onCancel && (

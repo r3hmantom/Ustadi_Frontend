@@ -13,6 +13,7 @@ import { TaskDialog } from "./task-dialog";
 import { TaskDetailView } from "./task-detail-view";
 import useTask from "@/lib/hooks/useTask";
 import { useUserStore } from "@/lib/stores/useUserStore";
+import { completeTask } from "@/app/services/taskService";
 
 const TasksPage = () => {
   // State from task store
@@ -89,15 +90,24 @@ const TasksPage = () => {
   // Handle marking a task as completed
   const handleCompleteTask = async (taskId: number) => {
     try {
-      await updateTask(taskId, {
-        completed_at: new Date().toISOString(),
-      });
-
-      toast.success("Task marked as completed!");
+      // Use the completeTask service function that handles recurring tasks
+      const result = await completeTask(taskId);
+      
+      // Show appropriate success message based on whether a new task was created
+      if (result.next) {
+        toast.success("Task completed! A new recurring task has been created.");
+      } else {
+        toast.success("Task marked as completed!");
+      }
       
       // Refresh tasks data
       if (studentId) {
         await fetchTasks(studentId);
+      }
+      
+      // If we're viewing task details of the completed task, close the details view
+      if (selectedTask && selectedTask.task_id === taskId) {
+        setSelectedTask(null);
       }
     } catch (err) {
       console.error("Complete task error:", err);
@@ -138,13 +148,14 @@ const TasksPage = () => {
 
           <TaskDetailView
             task={selectedTask}
+            studentId={studentId}
             onEdit={handleEditTask}
             onComplete={handleCompleteTask}
             onDelete={handleDeleteTask}
             isProcessing={{
-              editing: isOperationInProgress(selectedTask.id, "editing"),
-              completing: isOperationInProgress(selectedTask.id, "completing"),
-              deleting: isOperationInProgress(selectedTask.id, "deleting"),
+              editing: isOperationInProgress(selectedTask.task_id, "editing"),
+              completing: isOperationInProgress(selectedTask.task_id, "completing"),
+              deleting: isOperationInProgress(selectedTask.task_id, "deleting"),
             }}
           />
         </div>

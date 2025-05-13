@@ -4,12 +4,21 @@ import { useState, FormEvent, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Loader2, X, Save } from "lucide-react";
-import { TaskFormData } from "./edit-task-form";
+import { TaskFormData, RECURRENCE_PATTERNS } from "./edit-task-form";
 import { Task } from "@/db/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader } from "@/components/ui/loader";
 import { LoadingButton } from "@/components/ui/loading-button";
 
@@ -35,6 +44,7 @@ export function TaskDialog({
     due_date: "",
     priority: 3,
     is_recurring: false,
+    recurrence_pattern: RECURRENCE_PATTERNS.WEEKLY, // Default recurrence pattern
   });
 
   // When the task prop changes, update the form state
@@ -48,6 +58,7 @@ export function TaskDialog({
           : "",
         priority: task.priority || 3,
         is_recurring: Boolean(task.is_recurring),
+        recurrence_pattern: task.recurrence_pattern || RECURRENCE_PATTERNS.WEEKLY,
       });
     } else {
       // Reset form when opening for a new task
@@ -57,6 +68,7 @@ export function TaskDialog({
         due_date: "",
         priority: 3,
         is_recurring: false,
+        recurrence_pattern: RECURRENCE_PATTERNS.WEEKLY,
       });
     }
   }, [task]);
@@ -75,6 +87,13 @@ export function TaskDialog({
     }));
   };
 
+  const handleRecurrencePatternChange = (value: string) => {
+    setFormState((prevState) => ({
+      ...prevState,
+      recurrence_pattern: value,
+    }));
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -84,10 +103,16 @@ export function TaskDialog({
       return;
     }
 
+    // If not recurring, remove the pattern before submitting
+    const dataToSubmit = { ...formState };
+    if (!dataToSubmit.is_recurring) {
+      delete dataToSubmit.recurrence_pattern;
+    }
+
     setIsSubmitting(true);
 
     try {
-      await onSubmit(formState, task?.task_id);
+      await onSubmit(dataToSubmit, task?.task_id);
       toast.success(
         isEditMode ? "Task updated successfully!" : "Task created successfully!"
       );
@@ -204,6 +229,31 @@ export function TaskDialog({
                   Recurring task
                 </Label>
               </div>
+
+              {formState.is_recurring && (
+                <div className="space-y-2">
+                  <Label htmlFor="recurrence_pattern">Recurrence Pattern</Label>
+                  <Select
+                    value={formState.recurrence_pattern}
+                    onValueChange={handleRecurrencePatternChange}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a recurrence pattern" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Recurrence</SelectLabel>
+                        <SelectItem value={RECURRENCE_PATTERNS.DAILY}>Daily</SelectItem>
+                        <SelectItem value={RECURRENCE_PATTERNS.WEEKLY}>Weekly</SelectItem>
+                        <SelectItem value={RECURRENCE_PATTERNS.BIWEEKLY}>Bi-weekly</SelectItem>
+                        <SelectItem value={RECURRENCE_PATTERNS.MONTHLY}>Monthly</SelectItem>
+                        <SelectItem value={RECURRENCE_PATTERNS.CUSTOM}>Custom</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="pt-4 flex justify-end space-x-2">
                 <Button

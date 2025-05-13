@@ -95,16 +95,6 @@ CREATE TABLE QuizAttempts
     is_completed BIT DEFAULT 0
 );
 GO
-CREATE TABLE QuizAnswers
-(
-    answer_id INT PRIMARY KEY IDENTITY(1,1),
-    attempt_id INT FOREIGN KEY REFERENCES QuizAttempts(attempt_id) ON DELETE CASCADE,
-    question_id INT FOREIGN KEY REFERENCES Questions(question_id),
-    selected_option CHAR(1) CHECK (selected_option IN ('a', 'b', 'c', 'd')),
-    is_correct BIT NOT NULL,
-    CONSTRAINT UQ_AttemptQuestion UNIQUE (attempt_id, question_id)
-);
-GO
 CREATE TABLE Leaderboard
 (
     entry_id INT PRIMARY KEY IDENTITY(1,1),
